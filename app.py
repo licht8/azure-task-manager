@@ -9,6 +9,7 @@ app = Flask(__name__)
 def home():
     return {
         "message": "VERSION 3 - CI/CD is working!",
+        "message": "VERSION 4 - Multiple Revisions!",
         "deployment": "GitHub Actions",
         "environment": "Azure Container Apps",
         "hostname": socket.gethostname(),
