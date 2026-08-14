@@ -8,7 +8,8 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return {
-        "message": "VERSION 2 - Docker is running in Azure!",
+        "message": "VERSION 3 - CI/CD is working!",
+        "deployment": "GitHub Actions",
         "environment": "Azure Container Apps",
         "hostname": socket.gethostname(),
         "python": platform.python_version()
