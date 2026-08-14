@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Task Manager</title>
+
+	<link
+		rel="stylesheet"
+		href="/static/style.css"
+	>
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="header">
+
+        <div>
+            <h1>Task Manager</h1>
+            <p>Docker Azure Demo</p>
+        </div>
+
+        <button
+            id="newTaskButton"
+            class="button primary"
+        >
+            + New Task
+        </button>
+
+    </header>
+
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>Total</span>
+            <strong id="totalTasks">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Pending</span>
+            <strong id="pendingTasks">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>In Progress</span>
+            <strong id="inProgressTasks">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Completed</span>
+            <strong id="completedTasks">0</strong>
+        </div>
+
+    </section>
+
+
+    <section class="filters">
+
+        <input
+            id="searchInput"
+            type="text"
+            placeholder="Search tasks..."
+        >
+
+        <select id="statusFilter">
+
+            <option value="">
+                All statuses
+            </option>
+
+            <option value="pending">
+                Pending
+            </option>
+
+            <option value="in_progress">
+                In Progress
+            </option>
+
+            <option value="completed">
+                Completed
+            </option>
+
+        </select>
+
+
+        <select id="priorityFilter">
+
+            <option value="">
+                All priorities
+            </option>
+
+            <option value="low">
+                Low
+            </option>
+
+            <option value="medium">
+                Medium
+            </option>
+
+            <option value="high">
+                High
+            </option>
+
+        </select>
+
+    </section>
+
+
+    <main id="taskList" class="task-list">
+    </main>
+
+
+    <div
+        id="emptyState"
+        class="empty-state hidden"
+    >
+        No tasks found.
+    </div>
+
+
+    <div
+        id="taskModal"
+        class="modal hidden"
+    >
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2 id="modalTitle">
+                    New Task
+                </h2>
+
+                <button
+                    id="closeModal"
+                    class="close-button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="taskForm">
+
+                <input
+                    id="taskTitle"
+                    type="text"
+                    placeholder="Task title"
+                    maxlength="200"
+                    required
+                >
+
+
+                <textarea
+                    id="taskDescription"
+                    placeholder="Description"
+                    maxlength="1000"
+                ></textarea>
+
+
+                <div class="form-row">
+
+                    <select id="taskStatus">
+
+                        <option value="pending">
+                            Pending
+                        </option>
+
+                        <option value="in_progress">
+                            In Progress
+                        </option>
+
+                        <option value="completed">
+                            Completed
+                        </option>
+
+                    </select>
+
+
+                    <select id="taskPriority">
+
+                        <option value="low">
+                            Low
+                        </option>
+
+                        <option value="medium" selected>
+                            Medium
+                        </option>
+
+                        <option value="high">
+                            High
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <input
+                    id="taskDueDate"
+                    type="datetime-local"
+                >
+
+
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        id="cancelButton"
+                        class="button secondary"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="button primary"
+                    >
+                        Save Task
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="/static/app.js"></script>
+
+</body>
+
+</html>
