@@ -1,48 +1,54 @@
-name: azure-task-manager
+name: Build and Deploy to Azure
 
-type: Microsoft.App/containerApps
+on:
+  push:
+    branches:
+      - main
 
-location: westeurope
+permissions:
+  id-token: write
+  contents: read
 
-properties:
-  managedEnvironmentId: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.App/managedEnvironments/<CONTAINER_APPS_ENVIRONMENT>
+env:
+  ACR_NAME: ${{ vars.ACR_NAME }}
+  ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
+  CONTAINER_APP: ${{ vars.CONTAINER_APP }}
 
-  configuration:
-    activeRevisionsMode: Single
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-    ingress:
-      external: true
-      targetPort: 8000
-      transport: auto
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    registries:
-      - server: <ACR_LOGIN_SERVER>
-        identity: system
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-  template:
-    containers:
-      - name: azure-task-manager
-        image: <ACR_LOGIN_SERVER>/azure-task-manager:latest
+      - name: Login to Azure Container Registry
+        run: az acr login --name "$ACR_NAME"
 
-        env:
-          - name: DATABASE_URL
-            secretRef: database-url
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}" \
+            -t "$ACR_LOGIN_SERVER/$IMAGE_NAME:latest" \
+            .
 
-        resources:
-          cpu: 0.5
-          memory: 1Gi
+      - name: Push Docker image
+        run: |
+          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
+          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:latest"
 
-        probes:
-          - type: Liveness
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 30
-
-          - type: Readiness
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 5
-            periodSeconds: 10
+      - name: Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
