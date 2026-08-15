@@ -95,7 +95,9 @@ cd azure-task-manager
 
 ### 2. Create environment file
 Copy the example environment file:
-`Copy-Item .env.example .env`
+```
+Copy-Item .env.example .env
+```
 
 Do not commit .env to GitHub.
 The .gitignore file already excludes environment files.
