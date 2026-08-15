@@ -116,8 +116,14 @@ Swagger UI: `http://localhost:8000/docs`
 OpenAPI specification: `http://localhost:8001/openapi.json`
 
 ## Running with Docker
-Build the image: `docker build -t azure-task-manager .`
-Run the container: `docker run -p 8000:8000 --env-file .env azure-task-manager`
+Build the image: 
+```
+docker build -t azure-task-manager .
+```
+Run the container: 
+```
+docker run -p 8000:8000 --env-file .env azure-task-manager
+```
 
 The application will be available at:
 `http://localhost:8000`
