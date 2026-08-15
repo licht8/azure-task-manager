@@ -236,12 +236,12 @@ These values are used by azure/login@v2.
 ## Troubleshooting
 Check Container App status:
 ```
-az containerapp show --name azure-demo --resource-group rg-docker-demo --query "{name:name,state:properties.provisioningState,running:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" -o table
+az containerapp show --name YOUR_CONTAINER_APP --resource-group YOUR_RESOURCE_GROUP --query "{name:name,state:properties.provisioningState,running:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" -o table
 ```
 
 View logs:
 ```
-az containerapp logs show --name azure-demo --resource-group rg-docker-demo --tail 50
+az containerapp logs show --name YOUR_CONTAINER_APP --resource-group rg-docker-demo --tail 50
 ```
 
 Check PostgreSQL status:
