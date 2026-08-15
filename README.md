@@ -191,7 +191,9 @@ Database       : tasks
 ### Database Configuration
 The application uses the DATABASE_URL environment variable.
 Locally it can point to a local PostgreSQL instance:
-`DATABASE_URL=postgresql://taskuser:taskpassword@localhost:5432/tasks`
+```
+DATABASE_URL=postgresql://taskuser:taskpassword@localhost:5432/tasks
+```
 
 In Azure, the script creates the PostgreSQL connection string and stores it as an Azure Container App secret.
 The application receives it through: `DATABASE_URL=secretref:database-url`
@@ -200,7 +202,10 @@ The actual database password is therefore not stored in the source code.
 ### Azure Container Apps
 The application runs inside Azure Container Apps.
 The container listens on: `8000`
-The application starts with Uvicorn: `uvicorn main:app --host 0.0.0.0 --port 8000`
+The application starts with Uvicorn: 
+```
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
 Azure Container Apps exposes the application through HTTPS.
 
 ### GitHub Actions CI/CD
@@ -230,16 +235,24 @@ These values are used by azure/login@v2.
 
 ## Troubleshooting
 Check Container App status:
-`az containerapp show --name azure-demo --resource-group rg-docker-demo --query "{name:name,state:properties.provisioningState,running:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" -o table`
+```
+az containerapp show --name azure-demo --resource-group rg-docker-demo --query "{name:name,state:properties.provisioningState,running:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" -o table
+```
 
 View logs:
-`az containerapp logs show --name azure-demo --resource-group rg-docker-demo --tail 50`
+```
+az containerapp logs show --name azure-demo --resource-group rg-docker-demo --tail 50
+```
 
 Check PostgreSQL status:
-```az postgres flexible-server show --name YOUR_POSTGRES_SERVER --resource-group YOUR_RESOURCE_GROUP --query "{state:state,fqdn:fullyQualifiedDomainName}" -o table```
+```
+az postgres flexible-server show --name YOUR_POSTGRES_SERVER --resource-group YOUR_RESOURCE_GROUP --query "{state:state,fqdn:fullyQualifiedDomainName}" -o table
+```
 
 Check Container App environment variables:
-`az containerapp show --name YOUR_CONTAINER_APP --resource-group YOUR_RESOURCE_GROUP --query "properties.template.containers[0].env" -o table`
+```
+az containerapp show --name YOUR_CONTAINER_APP --resource-group YOUR_RESOURCE_GROUP --query "properties.template.containers[0].env" -o table
+```
 The database URL should be configured using a secret reference: `DATABASE_URL    secretref:database-url`
 The actual secret value should not be printed or committed to Git.
 
