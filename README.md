@@ -178,7 +178,7 @@ PostgreSQL admin username
 PostgreSQL admin password
 ```
 
-Example configuration
+### Example configuration
 ```
 Resource Group : rg-azure-task-manager
 Location       : westeurope
