@@ -10,17 +10,18 @@ permissions:
   contents: read
 
 env:
-  ACR_NAME: ${{ vars.AZURE_ACR_NAME }}
-  ACR_LOGIN_SERVER: ${{ vars.AZURE_ACR_LOGIN_SERVER }}
+  ACR_NAME: dockerazureyehor
+  ACR_LOGIN_SERVER: dockerazureyehor.azurecr.io
   IMAGE_NAME: azure-demo
-  RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-  CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
+  RESOURCE_GROUP: rg-docker-demo
+  CONTAINER_APP: azure-demo
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -32,23 +33,23 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Login to Azure Container Registry
-        run: az acr login --name "$ACR_NAME"
+        run: az acr login --name $ACR_NAME
 
       - name: Build Docker image
         run: |
           docker build \
-            -t "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}" \
-            -t "$ACR_LOGIN_SERVER/$IMAGE_NAME:latest" \
+            -t $ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }} \
+            -t $ACR_LOGIN_SERVER/$IMAGE_NAME:latest \
             .
 
       - name: Push Docker image
         run: |
-          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
-          docker push "$ACR_LOGIN_SERVER/$IMAGE_NAME:latest"
+          docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}
+          docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:latest
 
       - name: Deploy to Azure Container Apps
         run: |
           az containerapp update \
-            --name "$CONTAINER_APP" \
-            --resource-group "$RESOURCE_GROUP" \
-            --image "$ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
+            --name $CONTAINER_APP \
+            --resource-group $RESOURCE_GROUP \
+            --image $ACR_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}
