@@ -1697,7 +1697,7 @@ else {
         $postgresResourceGroup,
         "--server-name",
         $postgresServerName,
-        "--database-name",
+        "--name",
         $databaseName
     )
 

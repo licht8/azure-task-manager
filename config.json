@@ -5,13 +5,13 @@
 
     "resourceGroup": "rg-task-manager",
 
-    "acrName": "chinazes",
+    "acrName": "",
 
     "environmentName": "docker-demo-env",
 
     "containerAppName": "containerapp-task-manager",
 
-    "postgresServerName": "chinazes",
+    "postgresServerName": "",
 
     "postgresAdmin": "taskuser",
 
