@@ -2,44 +2,66 @@
 
 Cloud-native task management API built with **FastAPI, Docker, PostgreSQL and Microsoft Azure**.
 
-The project is designed to demonstrate a complete application deployment workflow:
+The project demonstrates a complete application deployment workflow using containerization and Azure cloud services:
+
 - FastAPI REST API
 - PostgreSQL database
 - Docker containerization
 - Azure Container Registry (ACR)
 - Azure Container Apps
-- Azure Database for PostgreSQL
-- automated Azure infrastructure setup
+- Azure Database for PostgreSQL Flexible Server
+- Azure Managed Identity
+- Azure Container Apps health probes
+- Automated Azure infrastructure setup
 - GitHub Actions CI/CD
-- health checks and application metrics
+- Application health checks and metrics
 
-The project can be deployed to Azure using the included PowerShell script.  
-The script automatically creates and configures the required Azure resources.
+The project can be deployed to Azure using the included PowerShell deployment script.
+
+The deployment script supports both:
+
+- interactive configuration
+- configuration through a JSON file
+
+---
 
 ## Features
-### Task management
+
+### Task Management
+
 The application provides REST endpoints for managing tasks.
 
 Supported operations include:
+
 - create a task
 - retrieve tasks
 - retrieve a specific task
 - update a task
 - delete a task
 
-## Health monitoring
+### Health Monitoring
+
 The application provides a health endpoint:
-`GET /health`
-Example:
+
+```text
+GET /health
 ```
+
+Example response:
+
+```json
 {
   "status": "healthy"
 }
 ```
-The endpoint is also used by Azure Container Apps health probes.
+
+The `/health` endpoint is also used by Azure Container Apps health probes.
+
+---
 
 ## Project Structure
-```
+
+```text
 azure-task-manager/
 │
 ├── api/
@@ -72,6 +94,8 @@ azure-task-manager/
 │
 ├── .env.example
 ├── .gitignore
+├── CONFIG.md
+├── config.json
 ├── Dockerfile
 ├── containerapp.yaml
 ├── main.py
@@ -79,185 +103,520 @@ azure-task-manager/
 └── setup-azure.ps1
 ```
 
-## Running Locally
-### Requirements
+---
 
-Install:
+# Running Locally
+
+## Requirements
+
+Install the following:
+
 - Python 3.12+
-- Docker
+- Docker Desktop
 - PostgreSQL
+- PowerShell
 
-### 1. Clone the repository
-```
+---
+
+## 1. Clone the repository
+
+```powershell
 git clone https://github.com/licht8/azure-task-manager.git
 cd azure-task-manager
 ```
 
-### 2. Create environment file
+---
+
+## 2. Create the environment file
+
 Copy the example environment file:
-```
+
+```powershell
 Copy-Item .env.example .env
 ```
 
-Do not commit .env to GitHub.
-The .gitignore file already excludes environment files.
+Configure the required environment variables in `.env`.
 
-### 3. Install Python dependencies
-```
+Do **not** commit `.env` to GitHub.
+
+The `.gitignore` file already excludes environment files.
+
+---
+
+## 3. Install Python dependencies
+
+Create a virtual environment:
+
+```powershell
 python -m venv .venv
+```
+
+Activate it:
+
+```powershell
 .\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```powershell
 pip install -r requirements.txt
 ```
 
-### 4. Start the application
-`uvicorn main:app --reload --port 8000`
-The API will be available at: `http://localhost:8000`
-Swagger UI: `http://localhost:8000/docs`
-OpenAPI specification: `http://localhost:8001/openapi.json`
+---
 
-## Running with Docker
-Build the image: 
+## 4. Start the application
+
+```powershell
+uvicorn main:app --reload --port 8000
 ```
+
+The API will be available at:
+
+```text
+http://localhost:8000
+```
+
+Swagger UI:
+
+```text
+http://localhost:8000/docs
+```
+
+OpenAPI specification:
+
+```text
+http://localhost:8000/openapi.json
+```
+
+---
+
+# Running with Docker
+
+Build the Docker image:
+
+```powershell
 docker build -t azure-task-manager .
 ```
-Run the container: 
-```
+
+Run the container:
+
+```powershell
 docker run -p 8000:8000 --env-file .env azure-task-manager
 ```
 
 The application will be available at:
-`http://localhost:8000`
 
-## Deploying to Azure
-__The project includes an automated deployment script:__`setup-azure.ps1`
+```text
+http://localhost:8000
+```
 
-The script is designed to make Azure deployment as simple as possible.
-Instead of manually creating every Azure resource, the script asks for the required configuration and creates the infrastructure automatically.
+---
 
-### Azure resources created by the script
-The deployment script creates and configures:
+# Deploying to Azure
+
+The project includes an automated Azure deployment script:
+
+```text
+setup-azure.ps1
+```
+
+The script automates the deployment and configuration of the required Azure infrastructure.
+
+Instead of manually creating each resource, the script can detect existing resources, reuse them, or create new resources when necessary.
+
+## Deployment Script Features
+
+The script performs the following operations:
+
+1. Checks Azure CLI and Docker
+2. Checks Docker daemon status
+3. Checks Azure login
+4. Allows Azure subscription selection
+5. Checks required Azure Resource Providers
+6. Configures the Azure region
+7. Creates or reuses a Resource Group
+8. Creates or reuses an Azure Container Registry
+9. Builds and pushes the Docker image
+10. Creates or reuses PostgreSQL Flexible Server
+11. Creates or reuses the PostgreSQL database
+12. Creates or reuses a Container Apps Environment
+13. Creates or reuses the Container App
+14. Configures a system-assigned Managed Identity
+15. Grants the `AcrPull` role
+16. Configures ACR authentication
+17. Generates the PostgreSQL `DATABASE_URL`
+18. Stores `DATABASE_URL` as an Azure Container App secret
+19. Configures the `DATABASE_URL` environment variable
+20. Configures application health probes
+21. Deploys the Docker image
+22. Performs final deployment verification
+
+---
+
+# Azure Resources
+
+The deployment script creates or reuses the following Azure resources:
+
 - Resource Group
 - Azure Container Registry
-- PostgreSQL Flexible Server
-- PostgreSQL database
 - Container Apps Environment
 - Azure Container App
-- Managed Identity
-- ACR permissions
-- PostgreSQL connection configuration
+- PostgreSQL Flexible Server
+- PostgreSQL database
+- System-assigned Managed Identity
+- `AcrPull` role assignment
 - Container App secrets
-- Health probes
-- Docker image deployment
+- Container App health probes
 
-### Azure Deployment Requirements
-Before running the script, install and configure:
-Azure CLI
-Docker Desktop
-PowerShell
-an Azure subscription
+---
 
-Login to Azure and verify the active subscription, also, if necessary, select the correct subscription:
+# Azure Deployment Requirements
+
+Before running the deployment script, install:
+
+- Azure CLI
+- Docker Desktop
+- PowerShell
+- an active Azure subscription
+
+Verify Azure CLI:
+
+```powershell
+az --version
 ```
+
+Verify Docker:
+
+```powershell
+docker --version
+```
+
+Log in to Azure:
+
+```powershell
 az login
+```
+
+Check the current Azure account:
+
+```powershell
 az account show
+```
+
+You can also manually select a subscription:
+
+```powershell
 az account set --subscription "YOUR_SUBSCRIPTION_ID"
 ```
 
-### Deploy with PowerShell on Azure
+The deployment script also provides subscription selection during interactive installation.
+
+---
+
+# Azure Configuration
+
+The deployment script supports two configuration modes.
+
+## Interactive Mode
+
 Run:
-`.\setup-azure.ps1`
 
-The script will ask for values such as:
-```
-Resource Group
-Azure region
-ACR name
-Container App name
-PostgreSQL server name
-PostgreSQL admin username
-PostgreSQL admin password
+```powershell
+.\setup-azure.ps1
 ```
 
-### Example configuration
-```
-Resource Group : rg-azure-task-manager
-Location       : westeurope
-ACR            : azuretaskmanager123
-Container App  : azure-task-manager
-PostgreSQL     : azure-task-manager-db
-Database       : tasks
+The script will interactively request missing configuration values.
+
+---
+
+## Configuration File Mode
+
+The script can also use a JSON configuration file:
+
+```powershell
+.\setup-azure.ps1 -Config .\config.json
 ```
 
-### Database Configuration
-The application uses the DATABASE_URL environment variable.
-Locally it can point to a local PostgreSQL instance:
+If `config.json` exists in the same directory as `setup-azure.ps1`, it is automatically loaded when no `-Config` parameter is specified.
+
+For example:
+
+```powershell
+.\setup-azure.ps1
 ```
+
+will automatically use:
+
+```text
+.\config.json
+```
+
+### Configuration Parameters
+
+| Parameter | Description |
+|---|---|
+| `subscriptionId` | Azure subscription ID used for the deployment. |
+| `location` | Azure region used when creating new resources. |
+| `resourceGroup` | Default Azure Resource Group used by the deployment. |
+| `acrName` | Azure Container Registry name. The name must be globally unique. |
+| `environmentName` | Azure Container Apps Environment name. |
+| `containerAppName` | Azure Container App name. |
+| `postgresServerName` | PostgreSQL Flexible Server name. The name must be globally unique. |
+| `postgresAdmin` | PostgreSQL administrator username. |
+| `databaseName` | PostgreSQL database name. |
+| `imageTag` | Docker image tag used for the application image. |
+
+Additional documentation for the configuration file is available in:
+
+```text
+CONFIG.md
+```
+
+---
+
+# Example Azure Configuration
+
+With the example `config.json`, the deployment uses:
+
+```text
+Subscription:
+  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+Location:
+  westeurope
+
+Resource Group:
+  rg-task-manager
+
+Azure Container Registry:
+  acr-task-manager
+
+Container Apps Environment:
+  docker-demo-env
+
+Container App:
+  containerapp-task-manager
+
+PostgreSQL Server:
+  postgres-task-manager
+
+PostgreSQL Administrator:
+  taskuser
+
+PostgreSQL Database:
+  tasks
+
+Docker Image:
+  acr-task-manager.azurecr.io/containerapp-task-manager:latest
+```
+
+---
+
+# Database Configuration
+
+The application uses the `DATABASE_URL` environment variable.
+
+For local development, it can point to a local PostgreSQL instance:
+
+```text
 DATABASE_URL=postgresql://taskuser:taskpassword@localhost:5432/tasks
 ```
 
-In Azure, the script creates the PostgreSQL connection string and stores it as an Azure Container App secret.
-The application receives it through: `DATABASE_URL=secretref:database-url`
-The actual database password is therefore not stored in the source code.
+In Azure, the deployment script automatically generates the PostgreSQL connection string.
 
-### Azure Container Apps
-The application runs inside Azure Container Apps.
-The container listens on: `8000`
-The application starts with Uvicorn: 
+The generated connection string has the following structure:
+
+```text
+postgresql://USERNAME:PASSWORD@SERVER:5432/DATABASE?sslmode=require
 ```
+
+The connection string is stored as an Azure Container App secret.
+
+The application receives it through:
+
+```text
+DATABASE_URL=secretref:database-url
+```
+
+The actual PostgreSQL password is therefore not stored in the source code or `config.json`.
+
+---
+
+# Azure Container Apps
+
+The application runs inside Azure Container Apps.
+
+The container listens on port:
+
+```text
+8000
+```
+
+The application is started with:
+
+```text
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
+
 Azure Container Apps exposes the application through HTTPS.
 
-### GitHub Actions CI/CD
-The repository includes .github/workflows/deploy.yml so the workflow automatically deploys the application when changes are pushed to the main branch.
-Here's the Deployment pipeline:
-git push -> GitHub Actions -> Azure Login -> Azure Container Registry (ACR) Login -> Docker Build -> Docker Push -> Azure Container Apps Update
+The deployment script also configures liveness and readiness probes using:
 
-### GitHub Actions Configuration
+```text
+GET /health
 ```
+
+---
+
+# Azure Container Registry
+
+The Docker image is stored in Azure Container Registry.
+
+The image follows the format:
+
+```text
+<ACR_LOGIN_SERVER>/<IMAGE_NAME>:<IMAGE_TAG>
+```
+
+For example:
+
+```text
+acr-task-manager.azurecr.io/containerapp-task-manager:latest
+```
+
+The Container App uses a system-assigned Managed Identity to authenticate with ACR.
+
+The script automatically grants the identity:
+
+```text
+AcrPull
+```
+
+permission on the Container Registry.
+
+No ACR admin password is required.
+
+---
+
+# GitHub Actions CI/CD
+
+The repository contains a GitHub Actions workflow:
+
+```text
+.github/workflows/deploy.yml
+```
+
+The workflow can automatically build and deploy the application when changes are pushed to the `main` branch.
+
+The deployment pipeline is:
+
+```text
+git push
+    ↓
+GitHub Actions
+    ↓
+Azure Login
+    ↓
+Azure Container Registry Login
+    ↓
+Docker Build
+    ↓
+Docker Push
+    ↓
+Azure Container Apps Update
+```
+
+---
+
+# GitHub Actions Configuration
+
+The GitHub Actions workflow uses the Azure resources configured for the project.
+
+The configuration should correspond to the actual Azure deployment:
+
+```yaml
 env:
-  ACR_NAME: dockerazureyehor
-  ACR_LOGIN_SERVER: dockerazureyehor.azurecr.io
-  IMAGE_NAME: azure-demo
-  RESOURCE_GROUP: rg-docker-demo
-  CONTAINER_APP: azure-demo
+  ACR_NAME: acr-task-manager
+  ACR_LOGIN_SERVER: acr-task-manager.azurecr.io
+  IMAGE_NAME: containerapp-task-manager
+  RESOURCE_GROUP: rg-task-manager
+  CONTAINER_APP: containerapp-task-manager
 ```
-__These values must match the Azure resources created for the deployment.__
 
-### GitHub Secrets
-The GitHub repository must contain the following Actions secrets: 
-```
+These values must match the Azure resources used by the deployment.
+
+---
+
+# GitHub Secrets
+
+The GitHub repository must contain the following Actions secrets:
+
+```text
 AZURE_CLIENT_ID
 AZURE_TENANT_ID
 AZURE_SUBSCRIPTION_ID
 ```
-These values are used by azure/login@v2.
 
-## Troubleshooting
-Check Container App status:
-```
-az containerapp show --name YOUR_CONTAINER_APP --resource-group YOUR_RESOURCE_GROUP --query "{name:name,state:properties.provisioningState,running:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" -o table
-```
+These values are used by:
 
-View logs:
-```
-az containerapp logs show --name YOUR_CONTAINER_APP --resource-group rg-docker-demo --tail 50
+```text
+azure/login@v2
 ```
 
-Check PostgreSQL status:
-```
-az postgres flexible-server show --name YOUR_POSTGRES_SERVER --resource-group YOUR_RESOURCE_GROUP --query "{state:state,fqdn:fullyQualifiedDomainName}" -o table
+Secrets must be configured in the GitHub repository and must not be committed to the source code.
+
+---
+
+# Troubleshooting
+
+## Check Container App Status
+
+```powershell
+az containerapp show `
+  --name YOUR_CONTAINER_APP `
+  --resource-group YOUR_RESOURCE_GROUP `
+  --query "{name:name,state:properties.provisioningState,running:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" `
+  -o table
 ```
 
-Check Container App environment variables:
-```
-az containerapp show --name YOUR_CONTAINER_APP --resource-group YOUR_RESOURCE_GROUP --query "properties.template.containers[0].env" -o table
-```
-The database URL should be configured using a secret reference: `DATABASE_URL    secretref:database-url`
-The actual secret value should not be printed or committed to Git.
+---
 
-A successful application startup should contain something similar to:
+## View Container App Logs
+
+```powershell
+az containerapp logs show `
+  --name YOUR_CONTAINER_APP `
+  --resource-group YOUR_RESOURCE_GROUP `
+  --tail 50
 ```
-Application startup complete.
-Uvicorn running on http://0.0.0.0:8000
+
+---
+
+## Check PostgreSQL Status
+
+```powershell
+az postgres flexible-server show `
+  --name YOUR_POSTGRES_SERVER `
+  --resource-group YOUR_RESOURCE_GROUP `
+  --query "{state:state,fqdn:fullyQualifiedDomainName}" `
+  -o table
 ```
+
+---
+
+## Check Container App Environment Variables
+
+```powershell
+az containerapp show `
+  --name YOUR_CONTAINER_APP `
+  --resource-group YOUR_RESOURCE_GROUP `
+  --query "properties.template.containers[0].env" `
+  -o table
+```
+
+---
+
+# License
+
+This project is intended for educational and demonstration purposes.
