@@ -11,164 +11,472 @@
 
     <title>Task Manager</title>
 
-	<link
-		rel="stylesheet"
-		href="/static/style.css"
-	>
+    <link
+        rel="stylesheet"
+        href="/static/style.css?v=3"
+    >
 </head>
 
 <body>
 
-<div class="app">
+<div class="app-shell">
 
-    <header class="header">
+    <!-- Sidebar -->
 
-        <div>
-            <h1>Task Manager</h1>
-            <p>Docker Azure Demo</p>
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ✓
+            </div>
+
+            <div>
+                <div class="brand-title">
+                    Task Manager
+                </div>
+
+                <div class="brand-subtitle">
+                    Your personal tasks
+                </div>
+            </div>
+
         </div>
 
-        <button
-            id="newTaskButton"
-            class="button primary"
-        >
-            + New Task
-        </button>
 
-    </header>
+        <nav class="sidebar-nav">
 
+            <div class="nav-section-title">
+                WORKSPACE
+            </div>
 
-    <section class="stats">
+            <a
+                href="#"
+                class="nav-item active"
+            >
+                <span class="nav-icon">▦</span>
+                Dashboard
+            </a>
+			
+			<a
+				href="/static/calendar.html"
+				class="nav-item"
+			>
+			<span class="nav-icon">◷</span>
+				Calendar
+			</a>
 
-        <div class="stat-card">
-            <span>Total</span>
-            <strong id="totalTasks">0</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>Pending</span>
-            <strong id="pendingTasks">0</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>In Progress</span>
-            <strong id="inProgressTasks">0</strong>
-        </div>
-
-        <div class="stat-card">
-            <span>Completed</span>
-            <strong id="completedTasks">0</strong>
-        </div>
-
-    </section>
+        </nav>
 
 
-    <section class="filters">
+		<div class="sidebar-profile">
 
-        <input
-            id="searchInput"
-            type="text"
-            placeholder="Search tasks..."
-        >
+			<div class="profile-user">
 
-        <select id="statusFilter">
+				<div
+					class="profile-avatar"
+					id="profileAvatar"
+				>
+					U
+				</div>
 
-            <option value="">
-                All statuses
-            </option>
+				<div class="profile-info">
 
-            <option value="pending">
-                Pending
-            </option>
+					<div
+						class="profile-name"
+						id="profileName"
+					>
+						Loading...
+					</div>
 
-            <option value="in_progress">
-                In Progress
-            </option>
+					<div class="profile-role">
+						User
+					</div>
 
-            <option value="completed">
-                Completed
-            </option>
+				</div>
 
-        </select>
-
-
-        <select id="priorityFilter">
-
-            <option value="">
-                All priorities
-            </option>
-
-            <option value="low">
-                Low
-            </option>
-
-            <option value="medium">
-                Medium
-            </option>
-
-            <option value="high">
-                High
-            </option>
-
-        </select>
-
-    </section>
+			</div>
 
 
-    <main id="taskList" class="task-list">
+			<div class="profile-actions">
+
+				<button
+					type="button"
+					class="sidebar-user-action"
+					id="settingsButton"
+				>
+					<span>⚙</span>
+					Settings
+				</button>
+
+				<button
+					type="button"
+					class="sidebar-user-action"
+					id="logoutButton"
+				>
+					<span>⇥</span>
+					Logout
+				</button>
+
+			</div>
+
+		</div>
+
+    </aside>
+
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        <!-- Header -->
+
+        <header class="topbar">
+
+            <div>
+
+                <div class="breadcrumb">
+                    Workspace / Dashboard
+                </div>
+
+                <h1>
+                    My Tasks
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage your tasks and stay productive.
+                </p>
+
+            </div>
+
+
+            <div class="topbar-actions">
+
+                <button
+                    id="logoutButton"
+                    class="button logout-button"
+                >
+                    <span>↪</span>
+                    Logout
+                </button>
+
+                <button
+                    id="newTaskButton"
+                    class="button primary-button"
+                >
+                    <span>+</span>
+                    New Task
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- Statistics -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon total-icon">
+                    #
+                </div>
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Total Tasks
+                    </span>
+
+                    <strong
+                        id="totalTasks"
+                        class="stat-value"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon pending-icon">
+                    ◷
+                </div>
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Pending
+                    </span>
+
+                    <strong
+                        id="pendingTasks"
+                        class="stat-value"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon progress-icon">
+                    ↗
+                </div>
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        In Progress
+                    </span>
+
+                    <strong
+                        id="inProgressTasks"
+                        class="stat-value"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon completed-icon">
+                    ✓
+                </div>
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Completed
+                    </span>
+
+                    <strong
+                        id="completedTasks"
+                        class="stat-value"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Tasks section -->
+
+        <section class="tasks-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        Tasks
+                    </h2>
+
+                    <p>
+                        Your personal task list
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Filters -->
+
+            <div class="filters">
+
+                <div class="search-wrapper">
+
+                    <span class="search-icon">
+                        ⌕
+                    </span>
+
+                    <input
+                        id="searchInput"
+                        type="text"
+                        placeholder="Search tasks..."
+                    >
+
+                </div>
+
+
+                <select id="statusFilter">
+
+                    <option value="">
+                        All statuses
+                    </option>
+
+                    <option value="pending">
+                        Pending
+                    </option>
+
+                    <option value="in_progress">
+                        In Progress
+                    </option>
+
+                    <option value="completed">
+                        Completed
+                    </option>
+
+                </select>
+
+
+                <select id="priorityFilter">
+
+                    <option value="">
+                        All priorities
+                    </option>
+
+                    <option value="low">
+                        Low priority
+                    </option>
+
+                    <option value="medium">
+                        Medium priority
+                    </option>
+
+                    <option value="high">
+                        High priority
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Task list -->
+
+            <main
+                id="taskList"
+                class="task-list"
+            >
+            </main>
+
+
+            <!-- Empty state -->
+
+            <div
+                id="emptyState"
+                class="empty-state hidden"
+            >
+
+                <div class="empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No tasks found
+                </h3>
+
+                <p>
+                    Create your first task to get started.
+                </p>
+
+                <button
+                    class="button primary-button"
+                    onclick="openModal()"
+                >
+                    + Create Task
+                </button>
+
+            </div>
+
+        </section>
+
     </main>
 
-
-    <div
-        id="emptyState"
-        class="empty-state hidden"
-    >
-        No tasks found.
-    </div>
+</div>
 
 
-    <div
-        id="taskModal"
-        class="modal hidden"
-    >
+<!-- Task modal -->
 
-        <div class="modal-content">
+<div
+    id="taskModal"
+    class="modal hidden"
+>
 
-            <div class="modal-header">
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-eyebrow">
+                    TASK
+                </span>
 
                 <h2 id="modalTitle">
                     New Task
                 </h2>
 
-                <button
-                    id="closeModal"
-                    class="close-button"
-                >
-                    ×
-                </button>
-
             </div>
 
+            <button
+                id="closeModal"
+                class="close-button"
+            >
+                ×
+            </button>
 
-            <form id="taskForm">
+        </div>
+
+
+        <form id="taskForm">
+
+            <div class="form-group">
+
+                <label for="taskTitle">
+                    Title
+                </label>
 
                 <input
                     id="taskTitle"
                     type="text"
-                    placeholder="Task title"
+                    placeholder="What needs to be done?"
                     maxlength="200"
                     required
                 >
 
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="taskDescription">
+                    Description
+                </label>
 
                 <textarea
                     id="taskDescription"
-                    placeholder="Description"
+                    placeholder="Add some details..."
                     maxlength="1000"
                 ></textarea>
 
+            </div>
 
-                <div class="form-row">
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="taskStatus">
+                        Status
+                    </label>
 
                     <select id="taskStatus">
 
@@ -186,6 +494,14 @@
 
                     </select>
 
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="taskPriority">
+                        Priority
+                    </label>
 
                     <select id="taskPriority">
 
@@ -193,7 +509,10 @@
                             Low
                         </option>
 
-                        <option value="medium" selected>
+                        <option
+                            value="medium"
+                            selected
+                        >
                             Medium
                         </option>
 
@@ -205,42 +524,50 @@
 
                 </div>
 
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="taskDueDate">
+                    Due date
+                </label>
 
                 <input
                     id="taskDueDate"
                     type="datetime-local"
                 >
 
+            </div>
 
-                <div class="form-actions">
 
-                    <button
-                        type="button"
-                        id="cancelButton"
-                        class="button secondary"
-                    >
-                        Cancel
-                    </button>
+            <div class="form-actions">
 
-                    <button
-                        type="submit"
-                        class="button primary"
-                    >
-                        Save Task
-                    </button>
+                <button
+                    type="button"
+                    id="cancelButton"
+                    class="button cancel-button"
+                >
+                    Cancel
+                </button>
 
-                </div>
+                <button
+                    type="submit"
+                    class="button primary-button"
+                >
+                    Save Task
+                </button>
 
-            </form>
+            </div>
 
-        </div>
+        </form>
 
     </div>
 
 </div>
 
 
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v=3"></script>
 
 </body>
 

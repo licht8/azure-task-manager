@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from core.security import get_current_user
 
 from schemas.task_schema import (
     TaskCreate,
@@ -25,10 +27,18 @@ router = APIRouter()
 @router.post(
     "/tasks",
     response_model=TaskResponse,
-    tags=["Tasks"]
+    tags=["Tasks"],
+    summary="Create Task",
+    description="Create a new task for the authenticated user."
 )
-def create_task_endpoint(task: TaskCreate):
-    return create_task(task)
+def create_task_endpoint(
+    task: TaskCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    return create_task(
+        task,
+        current_user["id"]
+    )
 
 
 @router.get(
@@ -36,7 +46,7 @@ def create_task_endpoint(task: TaskCreate):
     response_model=list[TaskResponse],
     tags=["Tasks"],
     summary="List Tasks",
-    description="List tasks with optional filtering, search and pagination."
+    description="List only tasks belonging to the authenticated user."
 )
 def get_tasks_endpoint(
     status: TaskStatus | None = Query(
@@ -62,9 +72,11 @@ def get_tasks_endpoint(
         ge=1,
         le=100,
         description="Maximum number of tasks to return"
-    )
+    ),
+    current_user: dict = Depends(get_current_user)
 ):
     return get_all_tasks(
+        user_id=current_user["id"],
         status=status,
         priority=priority,
         search=search,
@@ -72,25 +84,39 @@ def get_tasks_endpoint(
         limit=limit
     )
 
+
 @router.get(
     "/tasks/stats",
     response_model=TaskStatsResponse,
     tags=["Tasks"],
     summary="Task Statistics",
-    description="Return statistics about tasks."
+    description="Return statistics for the authenticated user's tasks."
 )
-def get_task_stats_endpoint():
+def get_task_stats_endpoint(
+    current_user: dict = Depends(get_current_user)
+):
 
-    return get_task_stats()
+    return get_task_stats(
+        user_id=current_user["id"]
+    )
+
 
 @router.get(
     "/tasks/{task_id}",
     response_model=TaskResponse,
-    tags=["Tasks"]
+    tags=["Tasks"],
+    summary="Get Task",
+    description="Get a task belonging to the authenticated user."
 )
-def get_task_endpoint(task_id: int):
+def get_task_endpoint(
+    task_id: int,
+    current_user: dict = Depends(get_current_user)
+):
 
-    task = get_task(task_id)
+    task = get_task(
+        task_id,
+        current_user["id"]
+    )
 
     if task is None:
         raise HTTPException(
@@ -104,16 +130,20 @@ def get_task_endpoint(task_id: int):
 @router.put(
     "/tasks/{task_id}",
     response_model=TaskResponse,
-    tags=["Tasks"]
+    tags=["Tasks"],
+    summary="Update Task",
+    description="Update a task belonging to the authenticated user."
 )
 def update_task_endpoint(
     task_id: int,
-    task: TaskUpdate
+    task: TaskUpdate,
+    current_user: dict = Depends(get_current_user)
 ):
 
     updated_task = update_task(
         task_id,
-        task
+        task,
+        current_user["id"]
     )
 
     if updated_task is None:
@@ -127,11 +157,19 @@ def update_task_endpoint(
 
 @router.delete(
     "/tasks/{task_id}",
-    tags=["Tasks"]
+    tags=["Tasks"],
+    summary="Delete Task",
+    description="Delete a task belonging to the authenticated user."
 )
-def delete_task_endpoint(task_id: int):
+def delete_task_endpoint(
+    task_id: int,
+    current_user: dict = Depends(get_current_user)
+):
 
-    deleted = delete_task(task_id)
+    deleted = delete_task(
+        task_id,
+        current_user["id"]
+    )
 
     if not deleted:
         raise HTTPException(

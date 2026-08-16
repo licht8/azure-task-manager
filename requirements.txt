@@ -3,3 +3,7 @@ uvicorn[standard]
 pydantic
 psycopg[binary]
 python-dotenv
+PyJWT
+pwdlib[argon2]
+email-validator
+python-multipart

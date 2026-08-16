@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Calendar - Task Manager</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css?v=calendar1"
+    >
+
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- ======================================================
+         SIDEBAR
+         ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ✓
+            </div>
+
+            <div>
+
+                <div class="brand-title">
+                    Calendar
+                </div>
+
+                <div class="brand-subtitle">
+                    Your personal calendar
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-title">
+                WORKSPACE
+            </div>
+
+
+            <a
+                href="/"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▣
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="/static/calendar.html"
+                class="nav-item active"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                Calendar
+
+            </a>
+
+        </nav>
+
+
+				<div class="sidebar-profile">
+
+			<div class="profile-user">
+
+				<div
+					class="profile-avatar"
+					id="profileAvatar"
+				>
+					U
+				</div>
+
+				<div class="profile-info">
+
+					<div
+						class="profile-name"
+						id="profileName"
+					>
+						Loading...
+					</div>
+
+					<div class="profile-role">
+						User
+					</div>
+
+				</div>
+
+			</div>
+
+
+			<div class="profile-actions">
+
+				<button
+					type="button"
+					class="sidebar-user-action"
+					id="settingsButton"
+				>
+					<span>⚙</span>
+					Settings
+				</button>
+
+				<button
+					type="button"
+					class="sidebar-user-action"
+					id="logoutButton"
+				>
+					<span>⇥</span>
+					Logout
+				</button>
+
+			</div>
+
+		</div>
+
+    </aside>
+
+
+    <!-- ======================================================
+         MAIN
+         ====================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- TOPBAR -->
+
+        <div class="topbar">
+
+            <div>
+
+                <div class="breadcrumb">
+                    Workspace / Calendar
+                </div>
+
+                <h1>
+                    Calendar
+                </h1>
+
+                <p class="page-subtitle">
+                    View your tasks by due date.
+                </p>
+
+            </div>
+
+
+            <div class="topbar-actions">
+
+                <button
+                    id="todayButton"
+                    class="button logout-button"
+                >
+                    Today
+                </button>
+
+                <button
+                    id="logoutButton"
+                    class="button logout-button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CALENDAR
+             ================================================== -->
+
+        <section class="calendar-section">
+
+
+            <!-- Calendar header -->
+
+            <div class="calendar-header">
+
+                <button
+                    id="previousMonth"
+                    class="calendar-nav-button"
+                >
+                    ‹
+                </button>
+
+
+                <div class="calendar-title">
+
+                    <h2 id="calendarMonth">
+                        August 2026
+                    </h2>
+
+                    <p id="calendarSubtitle">
+                        Your scheduled tasks
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="nextMonth"
+                    class="calendar-nav-button"
+                >
+                    ›
+                </button>
+
+            </div>
+
+
+            <!-- Week days -->
+
+            <div class="calendar-weekdays">
+
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+                <div>Sun</div>
+
+            </div>
+
+
+            <!-- Calendar grid -->
+
+            <div
+                id="calendarGrid"
+                class="calendar-grid"
+            >
+            </div>
+
+
+        </section>
+
+
+        <!-- ==================================================
+             LEGEND
+             ================================================== -->
+
+        <section class="calendar-legend">
+
+				<div class="calendar-legend">
+
+					<div class="calendar-legend-item">
+						<span class="calendar-legend-dot pending"></span>
+						Pending
+					</div>
+
+					<div class="calendar-legend-item">
+						<span class="calendar-legend-dot progress"></span>
+						In Progress
+					</div>
+
+					<div class="calendar-legend-item">
+						<span class="calendar-legend-dot completed"></span>
+						Completed
+					</div>
+
+				</div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<script src="/static/calendar.js?v=calendar1"></script>
+
+</body>
+
+</html>

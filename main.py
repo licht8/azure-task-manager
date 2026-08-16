@@ -7,6 +7,7 @@ from api.health import router as health_router
 from api.info import router as info_router
 from api.metrics import router as metrics_router
 from api.tasks import router as tasks_router
+from api.auth import router as auth_router
 
 from core.application_metrics import increment_requests
 from database.initialization import initialize_database
@@ -46,3 +47,4 @@ app.include_router(health_router)
 app.include_router(info_router)
 app.include_router(metrics_router)
 app.include_router(tasks_router)
+app.include_router(auth_router)

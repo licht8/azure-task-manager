@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Task Manager — Settings</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css?v=settings1"
+    >
+
+</head>
+
+
+<body>
+
+<div class="app-shell">
+
+    <!-- ======================================================
+         Sidebar
+         ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                T
+            </div>
+
+            <div>
+
+                <div class="brand-title">
+                    Task Manager
+                </div>
+
+                <div class="brand-subtitle">
+                    Docker Azure Demo
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-title">
+                WORKSPACE
+            </div>
+
+
+            <a
+                href="/"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▣
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="/static/calendar.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Calendar
+
+            </a>
+
+        </nav>
+
+
+        <!-- ==================================================
+             User Profile
+             ================================================== -->
+
+        <div class="sidebar-profile">
+
+            <div class="profile-user">
+
+                <div
+                    class="profile-avatar"
+                    id="profileAvatar"
+                >
+                    U
+                </div>
+
+                <div class="profile-info">
+
+                    <div
+                        class="profile-name"
+                        id="profileName"
+                    >
+                        Loading...
+                    </div>
+
+                    <div class="profile-role">
+                        User
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-actions">
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="settingsButton"
+                >
+
+                    <span>⚙</span>
+
+                    Settings
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="logoutButton"
+                >
+
+                    <span>⇥</span>
+
+                    Logout
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ======================================================
+         Main Content
+         ====================================================== -->
+
+    <main class="main-content">
+
+
+        <div class="topbar">
+
+            <div>
+
+                <div class="breadcrumb">
+                    Settings
+                </div>
+
+                <h1>
+                    Settings
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage your account and security
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             Account
+             ================================================== -->
+
+        <section class="settings-section">
+
+            <div class="settings-section-header">
+
+                <div>
+
+                    <div class="settings-eyebrow">
+                        ACCOUNT
+                    </div>
+
+                    <h2>
+                        Profile
+                    </h2>
+
+                    <p>
+                        Your account information
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="settings-profile-card">
+
+                <div class="settings-large-avatar"
+                     id="settingsAvatar">
+                    U
+                </div>
+
+
+                <div class="settings-user-details">
+
+                    <div class="settings-detail">
+
+                        <span class="settings-detail-label">
+                            Username
+                        </span>
+
+                        <span
+                            class="settings-detail-value"
+                            id="settingsUsername"
+                        >
+                            Loading...
+                        </span>
+
+                    </div>
+
+
+                    <div class="settings-detail">
+
+                        <span class="settings-detail-label">
+                            Email
+                        </span>
+
+                        <span
+                            class="settings-detail-value"
+                            id="settingsEmail"
+                        >
+                            Loading...
+                        </span>
+
+                    </div>
+
+
+                    <div class="settings-detail">
+
+                        <span class="settings-detail-label">
+                            Role
+                        </span>
+
+                        <span
+                            class="settings-detail-value"
+                            id="settingsRole"
+                        >
+                            User
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================================
+             Security
+             ================================================== -->
+
+        <section class="settings-section">
+
+            <div class="settings-section-header">
+
+                <div>
+
+                    <div class="settings-eyebrow">
+                        SECURITY
+                    </div>
+
+                    <h2>
+                        Change password
+                    </h2>
+
+                    <p>
+                        Update your account password
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="settings-card">
+
+
+                <div
+                    id="passwordSuccess"
+                    class="settings-message settings-success hidden"
+                >
+                    ✓ Password changed successfully
+                </div>
+
+
+                <div
+                    id="passwordError"
+                    class="settings-message settings-error hidden"
+                >
+                </div>
+
+
+                <form id="passwordForm">
+
+
+                    <div class="settings-form-group">
+
+                        <label for="currentPassword">
+                            Current password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="currentPassword"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="settings-form-group">
+
+                        <label for="newPassword">
+                            New password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="newPassword"
+                            autocomplete="new-password"
+                            minlength="6"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="settings-form-group">
+
+                        <label for="confirmPassword">
+                            Confirm new password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            autocomplete="new-password"
+                            minlength="6"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="settings-form-actions">
+
+                        <button
+                            type="submit"
+                            class="button primary-button"
+                            id="changePasswordButton"
+                        >
+                            Change password
+                        </button>
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<script src="/static/settings.js?v=settings1"></script>
+
+</body>
+
+</html>

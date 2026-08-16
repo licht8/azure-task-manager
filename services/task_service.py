@@ -8,64 +8,44 @@ from schemas.task_schema import (
 )
 
 
-def get_placeholder():
+def create_task(
+    task: TaskCreate,
+    user_id: int
+):
     """
-    Return the SQL parameter placeholder
-    depending on the database driver.
+    Create a new task for the authenticated user.
     """
 
     connection = get_database_connection()
 
     try:
-        if connection.__class__.__module__.startswith("psycopg"):
-            return "%s"
 
-        return "?"
-
-    finally:
-        connection.close()
-
-
-def create_task(task: TaskCreate):
-
-    connection = get_database_connection()
-
-    created_at = datetime.now(
-        timezone.utc
-    )
-
-    placeholder = (
-        "%s"
-        if connection.__class__.__module__.startswith("psycopg")
-        else "?"
-    )
-
-    query = f"""
-        INSERT INTO tasks (
-            title,
-            description,
-            status,
-            priority,
-            due_date,
-            created_at
-        )
-        VALUES (
-            {placeholder},
-            {placeholder},
-            {placeholder},
-            {placeholder},
-            {placeholder},
-            {placeholder}
-        )
-    """
-
-    if connection.__class__.__module__.startswith("psycopg"):
-
-        query += " RETURNING id"
+        created_at = datetime.now(timezone.utc)
 
         cursor = connection.execute(
-            query,
+            """
+            INSERT INTO tasks (
+                user_id,
+                title,
+                description,
+                status,
+                priority,
+                due_date,
+                created_at
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
+            RETURNING id
+            """,
             (
+                user_id,
                 task.title,
                 task.description,
                 task.status.value,
@@ -77,375 +57,392 @@ def create_task(task: TaskCreate):
 
         task_id = cursor.fetchone()["id"]
 
-    else:
+        connection.commit()
 
-        cursor = connection.execute(
-            query,
-            (
-                task.title,
-                task.description,
-                task.status.value,
-                task.priority.value,
-                task.due_date.isoformat()
-                if task.due_date
-                else None,
-                created_at.isoformat()
-            )
-        )
+        return {
+            "id": task_id,
+            "title": task.title,
+            "description": task.description,
+            "status": task.status,
+            "priority": task.priority,
+            "due_date": task.due_date,
+            "created_at": created_at
+        }
 
-        task_id = cursor.lastrowid
+    finally:
 
-    connection.commit()
-    connection.close()
-
-    return {
-        "id": task_id,
-        "title": task.title,
-        "description": task.description,
-        "status": task.status,
-        "priority": task.priority,
-        "due_date": task.due_date,
-        "created_at": created_at
-    }
+        connection.close()
 
 
 def get_all_tasks(
+    user_id: int,
     status=None,
     priority=None,
     search=None,
     skip=0,
     limit=10
 ):
+    """
+    Return only tasks belonging to the authenticated user.
+    """
 
     connection = get_database_connection()
 
-    placeholder = (
-        "%s"
-        if connection.__class__.__module__.startswith("psycopg")
-        else "?"
-    )
+    try:
 
-    query = """
-        SELECT
-            id,
-            title,
-            description,
-            status,
-            priority,
-            due_date,
-            created_at
-        FROM tasks
-    """
+        query = """
+            SELECT
+                id,
+                title,
+                description,
+                status,
+                priority,
+                due_date,
+                created_at
+            FROM tasks
+            WHERE user_id = %s
+        """
 
-    conditions = []
-    parameters = []
+        parameters = [user_id]
 
-    if status is not None:
+        if status is not None:
 
-        conditions.append(
-            f"status = {placeholder}"
-        )
+            query += """
+                AND status = %s
+            """
 
-        parameters.append(
-            status.value
-        )
+            parameters.append(
+                status.value
+            )
 
-    if priority is not None:
+        if priority is not None:
 
-        conditions.append(
-            f"priority = {placeholder}"
-        )
+            query += """
+                AND priority = %s
+            """
 
-        parameters.append(
-            priority.value
-        )
+            parameters.append(
+                priority.value
+            )
 
-    if search is not None:
+        if search is not None:
 
-        conditions.append(
-            f"(title LIKE {placeholder} OR description LIKE {placeholder})"
-        )
+            query += """
+                AND (
+                    title ILIKE %s
+                    OR description ILIKE %s
+                )
+            """
 
-        search_pattern = f"%{search}%"
+            search_pattern = f"%{search}%"
+
+            parameters.extend([
+                search_pattern,
+                search_pattern
+            ])
+
+        query += """
+            ORDER BY id DESC
+            LIMIT %s
+            OFFSET %s
+        """
 
         parameters.extend([
-            search_pattern,
-            search_pattern
+            limit,
+            skip
         ])
 
-    if conditions:
+        tasks = connection.execute(
+            query,
+            parameters
+        ).fetchall()
 
-        query += (
-            " WHERE "
-            + " AND ".join(conditions)
-        )
+        return [
+            dict(task)
+            for task in tasks
+        ]
 
-    query += f"""
-        ORDER BY id DESC
-        LIMIT {placeholder}
-        OFFSET {placeholder}
+    finally:
+
+        connection.close()
+
+
+def get_task(
+    task_id: int,
+    user_id: int
+):
     """
-
-    parameters.extend([
-        limit,
-        skip
-    ])
-
-    tasks = connection.execute(
-        query,
-        parameters
-    ).fetchall()
-
-    connection.close()
-
-    return [
-        dict(task)
-        for task in tasks
-    ]
-
-
-def get_task(task_id: int):
+    Return a task only if it belongs to the authenticated user.
+    """
 
     connection = get_database_connection()
 
-    placeholder = (
-        "%s"
-        if connection.__class__.__module__.startswith("psycopg")
-        else "?"
-    )
+    try:
 
-    task = connection.execute(
-        f"""
-        SELECT
-            id,
-            title,
-            description,
-            status,
-            priority,
-            due_date,
-            created_at
-        FROM tasks
-        WHERE id = {placeholder}
-        """,
-        (task_id,)
-    ).fetchone()
+        task = connection.execute(
+            """
+            SELECT
+                id,
+                title,
+                description,
+                status,
+                priority,
+                due_date,
+                created_at
+            FROM tasks
+            WHERE id = %s
+            AND user_id = %s
+            """,
+            (
+                task_id,
+                user_id
+            )
+        ).fetchone()
 
-    connection.close()
+        if task is None:
+            return None
 
-    if task is None:
-        return None
+        return dict(task)
 
-    return dict(task)
+    finally:
+
+        connection.close()
 
 
 def update_task(
     task_id: int,
-    task: TaskUpdate
+    task: TaskUpdate,
+    user_id: int
 ):
+    """
+    Update a task only if it belongs to the authenticated user.
+    """
 
     connection = get_database_connection()
 
-    placeholder = (
-        "%s"
-        if connection.__class__.__module__.startswith("psycopg")
-        else "?"
-    )
+    try:
 
-    existing_task = connection.execute(
-        f"""
-        SELECT *
-        FROM tasks
-        WHERE id = {placeholder}
-        """,
-        (task_id,)
-    ).fetchone()
+        existing_task = connection.execute(
+            """
+            SELECT *
+            FROM tasks
+            WHERE id = %s
+            AND user_id = %s
+            """,
+            (
+                task_id,
+                user_id
+            )
+        ).fetchone()
 
-    if existing_task is None:
+        if existing_task is None:
+            return None
+
+        new_title = (
+            task.title
+            if task.title is not None
+            else existing_task["title"]
+        )
+
+        new_description = (
+            task.description
+            if task.description is not None
+            else existing_task["description"]
+        )
+
+        new_status = (
+            task.status.value
+            if task.status is not None
+            else existing_task["status"]
+        )
+
+        new_priority = (
+            task.priority.value
+            if task.priority is not None
+            else existing_task["priority"]
+        )
+
+        new_due_date = (
+            task.due_date
+            if task.due_date is not None
+            else existing_task["due_date"]
+        )
+
+        connection.execute(
+            """
+            UPDATE tasks
+            SET
+                title = %s,
+                description = %s,
+                status = %s,
+                priority = %s,
+                due_date = %s
+            WHERE id = %s
+            AND user_id = %s
+            """,
+            (
+                new_title,
+                new_description,
+                new_status,
+                new_priority,
+                new_due_date,
+                task_id,
+                user_id
+            )
+        )
+
+        connection.commit()
+
+        updated_task = connection.execute(
+            """
+            SELECT
+                id,
+                title,
+                description,
+                status,
+                priority,
+                due_date,
+                created_at
+            FROM tasks
+            WHERE id = %s
+            AND user_id = %s
+            """,
+            (
+                task_id,
+                user_id
+            )
+        ).fetchone()
+
+        return dict(updated_task)
+
+    finally:
 
         connection.close()
 
-        return None
 
-    new_title = (
-        task.title
-        if task.title is not None
-        else existing_task["title"]
-    )
+def delete_task(
+    task_id: int,
+    user_id: int
+):
+    """
+    Delete a task only if it belongs to the authenticated user.
+    """
 
-    new_description = (
-        task.description
-        if task.description is not None
-        else existing_task["description"]
-    )
+    connection = get_database_connection()
 
-    new_status = (
-        task.status.value
-        if task.status is not None
-        else existing_task["status"]
-    )
+    try:
 
-    new_priority = (
-        task.priority.value
-        if task.priority is not None
-        else existing_task["priority"]
-    )
-
-    new_due_date = (
-        task.due_date
-        if task.due_date is not None
-        else existing_task["due_date"]
-    )
-
-    connection.execute(
-        f"""
-        UPDATE tasks
-        SET
-            title = {placeholder},
-            description = {placeholder},
-            status = {placeholder},
-            priority = {placeholder},
-            due_date = {placeholder}
-        WHERE id = {placeholder}
-        """,
-        (
-            new_title,
-            new_description,
-            new_status,
-            new_priority,
-            new_due_date,
-            task_id
+        cursor = connection.execute(
+            """
+            DELETE FROM tasks
+            WHERE id = %s
+            AND user_id = %s
+            """,
+            (
+                task_id,
+                user_id
+            )
         )
-    )
 
-    connection.commit()
+        connection.commit()
 
-    updated_task = connection.execute(
-        f"""
-        SELECT
-            id,
-            title,
-            description,
-            status,
-            priority,
-            due_date,
-            created_at
-        FROM tasks
-        WHERE id = {placeholder}
-        """,
-        (task_id,)
-    ).fetchone()
+        return cursor.rowcount > 0
 
-    connection.close()
+    finally:
 
-    return dict(updated_task)
+        connection.close()
 
 
-def delete_task(task_id: int):
+def get_task_stats(
+    user_id: int
+):
+    """
+    Return task statistics only for the authenticated user.
+    """
 
     connection = get_database_connection()
 
-    placeholder = (
-        "%s"
-        if connection.__class__.__module__.startswith("psycopg")
-        else "?"
-    )
+    try:
 
-    cursor = connection.execute(
-        f"""
-        DELETE FROM tasks
-        WHERE id = {placeholder}
-        """,
-        (task_id,)
-    )
+        stats = connection.execute(
+            """
+            SELECT
+                COUNT(*) AS total,
 
-    connection.commit()
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'pending'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS pending,
 
-    deleted = cursor.rowcount > 0
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'in_progress'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS in_progress,
 
-    connection.close()
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'completed'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS completed,
 
-    return deleted
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN priority = 'low'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS low_priority,
 
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN priority = 'medium'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS medium_priority,
 
-def get_task_stats():
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN priority = 'high'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS high_priority
 
-    connection = get_database_connection()
+            FROM tasks
+            WHERE user_id = %s
+            """,
+            (user_id,)
+        ).fetchone()
 
-    stats = connection.execute(
-        """
-        SELECT
-            COUNT(*) AS total,
+        return dict(stats)
 
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN status = 'pending'
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS pending,
+    finally:
 
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN status = 'in_progress'
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS in_progress,
-
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN status = 'completed'
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS completed,
-
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN priority = 'low'
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS low_priority,
-
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN priority = 'medium'
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS medium_priority,
-
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN priority = 'high'
-                        THEN 1
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS high_priority
-
-        FROM tasks
-        """
-    ).fetchone()
-
-    connection.close()
-
-    return dict(stats)
+        connection.close()
