@@ -25,8 +25,22 @@
 #  17. Deploys application image
 #  18. Performs final verification
 #
-# GitHub Actions are NOT required by this script.
+# Supports:
+#   - Interactive installation
+#   - Optional JSON configuration file
+#
+# Interactive:
+#   .\setup-azure.ps1
+#
+# With config:
+#   .\setup-azure.ps1 -Config .\config.json
+#
+# PostgreSQL password is NEVER stored in config.json.
 # ============================================================
+
+param(
+    [string]$Config = ""
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -35,6 +49,56 @@ Write-Host "============================================================" -Foreg
 Write-Host " Azure Task Manager - Azure Installer" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
+
+# ============================================================
+# Configuration file
+# ============================================================
+
+$configData = $null
+$configPath = $null
+
+# If -Config was not specified, automatically look for config.json
+if ([string]::IsNullOrWhiteSpace($Config)) {
+
+    $defaultConfigPath = Join-Path $PSScriptRoot "config.json"
+
+    if (Test-Path $defaultConfigPath) {
+        $Config = $defaultConfigPath
+    }
+}
+
+if (-not [string]::IsNullOrWhiteSpace($Config)) {
+
+    if (-not (Test-Path $Config)) {
+        throw "Configuration file not found: $Config"
+    }
+
+    $configPath = (Resolve-Path $Config).Path
+
+    Write-Host "Loading configuration:" -ForegroundColor Cyan
+    Write-Host "  $configPath" -ForegroundColor White
+
+    try {
+
+        $configData = Get-Content `
+            -Path $configPath `
+            -Raw `
+            -Encoding UTF8 |
+            ConvertFrom-Json
+
+    }
+    catch {
+
+        throw "Could not read configuration file '$configPath'. Error: $($_.Exception.Message)"
+    }
+
+    Write-Host "Configuration loaded successfully." -ForegroundColor Green
+}
+else {
+
+    Write-Host "No configuration file specified." -ForegroundColor Yellow
+    Write-Host "Interactive configuration mode will be used." -ForegroundColor DarkGray
+}
 
 # ============================================================
 # Helper functions
@@ -49,6 +113,59 @@ function Test-CommandExists {
     return $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
 }
 
+function Get-ConfigValue {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    if ($null -eq $configData) {
+        return $null
+    }
+
+    $property = $configData.PSObject.Properties[$Name]
+
+    if ($null -eq $property) {
+        return $null
+    }
+
+    $value = $property.Value
+
+    if ($null -eq $value) {
+        return $null
+    }
+
+    $valueString = [string]$value
+
+    if ([string]::IsNullOrWhiteSpace($valueString)) {
+        return $null
+    }
+
+    return $valueString.Trim()
+}
+
+function Read-ConfigOrPrompt {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Prompt
+    )
+
+    $configValue = Get-ConfigValue $Name
+
+    if (-not [string]::IsNullOrWhiteSpace($configValue)) {
+
+        Write-Host "$Prompt" -ForegroundColor DarkGray
+        Write-Host "  Using config value: $configValue" -ForegroundColor Green
+
+        return $configValue
+    }
+
+    return Read-RequiredValue $Prompt
+}
+
 function Read-RequiredValue {
     param (
         [Parameter(Mandatory = $true)]
@@ -56,6 +173,7 @@ function Read-RequiredValue {
     )
 
     while ($true) {
+
         $value = Read-Host $Prompt
 
         if (-not [string]::IsNullOrWhiteSpace($value)) {
@@ -73,33 +191,41 @@ function Read-PasswordValue {
     )
 
     while ($true) {
+
         $secure = Read-Host $Prompt -AsSecureString
 
         $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
 
         try {
+
             $value = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+
         }
         finally {
+
             [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
         }
 
         if ([string]::IsNullOrWhiteSpace($value)) {
+
             Write-Host "Password cannot be empty." -ForegroundColor Yellow
             continue
         }
 
         if ($value.Length -lt 8) {
+
             Write-Host "Password must contain at least 8 characters." -ForegroundColor Yellow
             continue
         }
 
         if ($value.Length -gt 128) {
+
             Write-Host "Password cannot contain more than 128 characters." -ForegroundColor Yellow
             continue
         }
 
         if ($value -match "\s") {
+
             Write-Host "Password cannot contain whitespace characters." -ForegroundColor Yellow
             continue
         }
@@ -130,16 +256,17 @@ function Invoke-Az {
 
     if ($LASTEXITCODE -ne 0) {
 
-        # Never print PostgreSQL passwords into the terminal/logs.
         $safeArguments = $Arguments -join " "
 
         if ($safeArguments -match "--admin-password\s+\S+") {
+
             $safeArguments = $safeArguments -replace `
                 "--admin-password\s+\S+", `
                 "--admin-password ***"
         }
 
         if ($safeArguments -match "database-url=\S+") {
+
             $safeArguments = $safeArguments -replace `
                 "database-url=\S+", `
                 "database-url=***"
@@ -197,6 +324,7 @@ function Ensure-ProviderRegistered {
     )
 
     if (Test-ProviderRegistered $Provider) {
+
         Write-Host "$Provider : Registered" -ForegroundColor Green
         return
     }
@@ -208,15 +336,18 @@ function Ensure-ProviderRegistered {
         2>$null
 
     if ([string]::IsNullOrWhiteSpace($state)) {
+
         Write-Host "$Provider : Not registered" -ForegroundColor Yellow
     }
     else {
+
         Write-Host "$Provider : $state" -ForegroundColor Yellow
     }
 
     $answer = Read-Host "Register $Provider now? (y/n)"
 
     if ($answer -notmatch "^(y|yes)$") {
+
         throw "Required provider $Provider is not registered."
     }
 
@@ -236,6 +367,7 @@ function Ensure-ProviderRegistered {
         Start-Sleep -Seconds 5
 
         if (Test-ProviderRegistered $Provider) {
+
             Write-Host "$Provider : Registered" -ForegroundColor Green
             return
         }
@@ -246,6 +378,124 @@ function Ensure-ProviderRegistered {
     Write-Host ""
 
     throw "Provider $Provider did not become Registered in time."
+}
+
+# ============================================================
+# Automatic Azure resource discovery
+# ============================================================
+
+function Find-ContainerAppEnvironment {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$EnvironmentName
+    )
+
+    Write-Host "Searching Container Apps Environment '$EnvironmentName' across the current subscription..." -ForegroundColor DarkGray
+
+    $json = az containerapp env list `
+        --query "[?name=='$EnvironmentName']" `
+        --output json `
+        2>$null
+
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    if ([string]::IsNullOrWhiteSpace($json)) {
+        return $null
+    }
+
+    $items = $json | ConvertFrom-Json
+
+    if ($null -eq $items) {
+        return $null
+    }
+
+    if ($items -isnot [System.Array]) {
+        $items = @($items)
+    }
+
+    if ($items.Count -eq 0) {
+        return $null
+    }
+
+    return $items[0]
+}
+
+function Find-ContainerApp {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ContainerAppName
+    )
+
+    Write-Host "Searching Container App '$ContainerAppName' across the current subscription..." -ForegroundColor DarkGray
+
+    $json = az containerapp list `
+        --query "[?name=='$ContainerAppName']" `
+        --output json `
+        2>$null
+
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    if ([string]::IsNullOrWhiteSpace($json)) {
+        return $null
+    }
+
+    $items = $json | ConvertFrom-Json
+
+    if ($null -eq $items) {
+        return $null
+    }
+
+    if ($items -isnot [System.Array]) {
+        $items = @($items)
+    }
+
+    if ($items.Count -eq 0) {
+        return $null
+    }
+
+    return $items[0]
+}
+
+function Find-PostgresServer {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ServerName
+    )
+
+    Write-Host "Searching PostgreSQL server '$ServerName' across the current subscription..." -ForegroundColor DarkGray
+
+    $json = az postgres flexible-server list `
+        --query "[?name=='$ServerName']" `
+        --output json `
+        2>$null
+
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    if ([string]::IsNullOrWhiteSpace($json)) {
+        return $null
+    }
+
+    $items = $json | ConvertFrom-Json
+
+    if ($null -eq $items) {
+        return $null
+    }
+
+    if ($items -isnot [System.Array]) {
+        $items = @($items)
+    }
+
+    if ($items.Count -eq 0) {
+        return $null
+    }
+
+    return $items[0]
 }
 
 # ============================================================
@@ -346,29 +596,63 @@ if ($subscriptions -isnot [System.Array]) {
     $subscriptions = @($subscriptions)
 }
 
-Write-Host ""
-Write-Host "Available subscriptions:" -ForegroundColor Yellow
-Write-Host ""
+$configSubscriptionId = Get-ConfigValue "subscriptionId"
 
-for ($i = 0; $i -lt $subscriptions.Count; $i++) {
+if ($configSubscriptionId) {
 
-    $marker = ""
+    $selectedSubscription = $subscriptions |
+        Where-Object { $_.Id -eq $configSubscriptionId } |
+        Select-Object -First 1
 
-    if ($subscriptions[$i].IsDefault -eq $true) {
-        $marker = " [DEFAULT]"
+    if (-not $selectedSubscription) {
+
+        Write-Host ""
+        Write-Host "Subscription from config was not found:" -ForegroundColor Red
+        Write-Host "  $configSubscriptionId" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Falling back to interactive selection." -ForegroundColor Yellow
+
+        $configSubscriptionId = $null
     }
-
-    Write-Host "[$i] $($subscriptions[$i].Name) - $($subscriptions[$i].Id)$marker"
 }
 
-Write-Host ""
+if ($configSubscriptionId) {
 
-$subscriptionIndex = Read-Choice `
-    -Prompt "Select subscription number" `
-    -Max $subscriptions.Count
+    $subscriptionId = $selectedSubscription.Id
+    $subscriptionName = $selectedSubscription.Name
 
-$subscriptionId = $subscriptions[$subscriptionIndex].Id
-$subscriptionName = $subscriptions[$subscriptionIndex].Name
+    Write-Host ""
+    Write-Host "Using subscription from config:" -ForegroundColor Green
+    Write-Host "  $subscriptionName"
+    Write-Host "  $subscriptionId"
+
+}
+else {
+
+    Write-Host ""
+    Write-Host "Available subscriptions:" -ForegroundColor Yellow
+    Write-Host ""
+
+    for ($i = 0; $i -lt $subscriptions.Count; $i++) {
+
+        $marker = ""
+
+        if ($subscriptions[$i].IsDefault -eq $true) {
+            $marker = " [DEFAULT]"
+        }
+
+        Write-Host "[$i] $($subscriptions[$i].Name) - $($subscriptions[$i].Id)$marker"
+    }
+
+    Write-Host ""
+
+    $subscriptionIndex = Read-Choice `
+        -Prompt "Select subscription number" `
+        -Max $subscriptions.Count
+
+    $subscriptionId = $subscriptions[$subscriptionIndex].Id
+    $subscriptionName = $subscriptions[$subscriptionIndex].Name
+}
 
 Invoke-Az @(
     "account",
@@ -407,8 +691,9 @@ Write-Host "All required resource providers are registered." -ForegroundColor Gr
 
 Write-Step "Azure region"
 
-$location = Read-RequiredValue `
-    "Azure region (example: polandcentral, westeurope)"
+$location = Read-ConfigOrPrompt `
+    -Name "location" `
+    -Prompt "Azure region (example: polandcentral, westeurope)"
 
 # ============================================================
 # Resource Group
@@ -416,84 +701,126 @@ $location = Read-RequiredValue `
 
 Write-Step "Resource Group"
 
-$existingResourceGroupsJson = az group list `
-    --query "[].{Name:name,Location:location}" `
-    --output json
+$configResourceGroup = Get-ConfigValue "resourceGroup"
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not retrieve Resource Groups."
+if ($configResourceGroup) {
+
+    $resourceGroup = $configResourceGroup
+
+    Write-Host "Resource Group from config:" -ForegroundColor Green
+    Write-Host "  $resourceGroup"
+
+    $rgExists = az group exists `
+        --name $resourceGroup
+
+    if ($rgExists -eq "true") {
+
+        Write-Host "Resource Group exists. Using it." -ForegroundColor Green
+    }
+    else {
+
+        Write-Host "Resource Group does not exist." -ForegroundColor Yellow
+        Write-Host "Creating it..." -ForegroundColor Yellow
+
+        Invoke-Az @(
+            "group",
+            "create",
+            "--name",
+            $resourceGroup,
+            "--location",
+            $location
+        )
+
+        Write-Host "Resource Group created." -ForegroundColor Green
+    }
+
 }
+else {
 
-$existingResourceGroups = $existingResourceGroupsJson | ConvertFrom-Json
+    $existingResourceGroupsJson = az group list `
+        --query "[].{Name:name,Location:location}" `
+        --output json
 
-if ($existingResourceGroups -and $existingResourceGroups -isnot [System.Array]) {
-    $existingResourceGroups = @($existingResourceGroups)
-}
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not retrieve Resource Groups."
+    }
 
-Write-Host ""
-Write-Host "[0] Create a new Resource Group" -ForegroundColor Cyan
+    $existingResourceGroups = $existingResourceGroupsJson | ConvertFrom-Json
 
-if ($existingResourceGroups) {
-
-    for ($i = 0; $i -lt $existingResourceGroups.Count; $i++) {
-
-        Write-Host "[$($i + 1)] Use '$($existingResourceGroups[$i].Name)' ($($existingResourceGroups[$i].Location))"
+    if (
+        $existingResourceGroups -and
+        $existingResourceGroups -isnot [System.Array]
+    ) {
+        $existingResourceGroups = @($existingResourceGroups)
     }
 
     Write-Host ""
+    Write-Host "[0] Create a new Resource Group" -ForegroundColor Cyan
 
-    $rgChoice = Read-Choice `
-        -Prompt "Select Resource Group option" `
-        -Max ($existingResourceGroups.Count + 1)
+    if ($existingResourceGroups) {
 
-    if ($rgChoice -eq 0) {
+        for ($i = 0; $i -lt $existingResourceGroups.Count; $i++) {
 
-        $resourceGroup = Read-RequiredValue "New Resource Group name"
+            Write-Host "[$($i + 1)] Use '$($existingResourceGroups[$i].Name)' ($($existingResourceGroups[$i].Location))"
+        }
 
-        $rgExists = az group exists `
-            --name $resourceGroup
+        Write-Host ""
 
-        if ($rgExists -eq "true") {
-            Write-Host "Resource Group already exists." -ForegroundColor Yellow
+        $rgChoice = Read-Choice `
+            -Prompt "Select Resource Group option" `
+            -Max ($existingResourceGroups.Count + 1)
+
+        if ($rgChoice -eq 0) {
+
+            $resourceGroup = Read-RequiredValue "New Resource Group name"
+
+            $rgExists = az group exists `
+                --name $resourceGroup
+
+            if ($rgExists -eq "true") {
+
+                Write-Host "Resource Group already exists." -ForegroundColor Yellow
+            }
+            else {
+
+                Invoke-Az @(
+                    "group",
+                    "create",
+                    "--name",
+                    $resourceGroup,
+                    "--location",
+                    $location
+                )
+
+                Write-Host "Resource Group created." -ForegroundColor Green
+            }
+
         }
         else {
 
-            Invoke-Az @(
-                "group",
-                "create",
-                "--name",
-                $resourceGroup,
-                "--location",
-                $location
-            )
+            $selectedRg = $existingResourceGroups[$rgChoice - 1]
 
-            Write-Host "Resource Group created." -ForegroundColor Green
+            $resourceGroup = $selectedRg.Name
+
+            Write-Host "Using existing Resource Group: $resourceGroup" -ForegroundColor Green
         }
 
     }
     else {
 
-        $selectedRg = $existingResourceGroups[$rgChoice - 1]
+        $resourceGroup = Read-RequiredValue "New Resource Group name"
 
-        $resourceGroup = $selectedRg.Name
+        Invoke-Az @(
+            "group",
+            "create",
+            "--name",
+            $resourceGroup,
+            "--location",
+            $location
+        )
 
-        Write-Host "Using existing Resource Group: $resourceGroup" -ForegroundColor Green
+        Write-Host "Resource Group created." -ForegroundColor Green
     }
-}
-else {
-
-    $resourceGroup = Read-RequiredValue "New Resource Group name"
-
-    Invoke-Az @(
-        "group",
-        "create",
-        "--name",
-        $resourceGroup,
-        "--location",
-        $location
-    )
-
-    Write-Host "Resource Group created." -ForegroundColor Green
 }
 
 # ============================================================
@@ -502,40 +829,161 @@ else {
 
 Write-Step "Azure Container Registry"
 
-$allAcrJson = az acr list `
-    --query "[].{Name:name,ResourceGroup:resourceGroup,Location:location,LoginServer:loginServer,Sku:sku.name}" `
-    --output json
+$configAcrName = Get-ConfigValue "acrName"
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not retrieve Azure Container Registries."
+if ($configAcrName) {
+
+    $acrName = $configAcrName
+
+    Write-Host "ACR from config:" -ForegroundColor Green
+    Write-Host "  $acrName"
+
+    $acrExists = az acr show `
+        --name $acrName `
+        --output none `
+        2>$null
+
+    if ($LASTEXITCODE -eq 0) {
+
+        Write-Host "ACR exists. Using it." -ForegroundColor Green
+    }
+    else {
+
+        Write-Host "ACR does not exist. Creating it..." -ForegroundColor Yellow
+
+        if ($acrName -notmatch "^[a-z0-9]{5,50}$") {
+
+            throw "Invalid ACR name in config. ACR names must contain only lowercase letters and numbers and be 5-50 characters long."
+        }
+
+        $acrNameCheck = az acr check-name `
+            --name $acrName `
+            --query nameAvailable `
+            --output tsv `
+            2>$null
+
+        if ($acrNameCheck -ne "true") {
+
+            throw "ACR name '$acrName' is not available."
+        }
+
+        Invoke-Az @(
+            "acr",
+            "create",
+            "--resource-group",
+            $resourceGroup,
+            "--name",
+            $acrName,
+            "--location",
+            $location,
+            "--sku",
+            "Basic",
+            "--admin-enabled",
+            "false"
+        )
+
+        Write-Host "ACR created." -ForegroundColor Green
+    }
+
 }
+else {
 
-$allAcrs = $allAcrJson | ConvertFrom-Json
+    $allAcrJson = az acr list `
+        --query "[].{Name:name,ResourceGroup:resourceGroup,Location:location,LoginServer:loginServer,Sku:sku.name}" `
+        --output json
 
-if ($allAcrs -and $allAcrs -isnot [System.Array]) {
-    $allAcrs = @($allAcrs)
-}
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not retrieve Azure Container Registries."
+    }
 
-Write-Host ""
-Write-Host "[0] Create a new ACR" -ForegroundColor Cyan
+    $allAcrs = $allAcrJson | ConvertFrom-Json
 
-if ($allAcrs) {
-
-    for ($i = 0; $i -lt $allAcrs.Count; $i++) {
-
-        Write-Host "[$($i + 1)] Use '$($allAcrs[$i].Name)'"
-        Write-Host "    Resource Group: $($allAcrs[$i].ResourceGroup)"
-        Write-Host "    Login Server:  $($allAcrs[$i].LoginServer)"
-        Write-Host "    SKU:           $($allAcrs[$i].Sku)"
+    if ($allAcrs -and $allAcrs -isnot [System.Array]) {
+        $allAcrs = @($allAcrs)
     }
 
     Write-Host ""
+    Write-Host "[0] Create a new ACR" -ForegroundColor Cyan
 
-    $acrChoice = Read-Choice `
-        -Prompt "Select ACR option" `
-        -Max ($allAcrs.Count + 1)
+    if ($allAcrs) {
 
-    if ($acrChoice -eq 0) {
+        for ($i = 0; $i -lt $allAcrs.Count; $i++) {
+
+            Write-Host "[$($i + 1)] Use '$($allAcrs[$i].Name)'"
+            Write-Host "    Resource Group: $($allAcrs[$i].ResourceGroup)"
+            Write-Host "    Login Server:  $($allAcrs[$i].LoginServer)"
+            Write-Host "    SKU:           $($allAcrs[$i].Sku)"
+        }
+
+        Write-Host ""
+
+        $acrChoice = Read-Choice `
+            -Prompt "Select ACR option" `
+            -Max ($allAcrs.Count + 1)
+
+        if ($acrChoice -eq 0) {
+
+            do {
+
+                $acrName = Read-RequiredValue `
+                    "New ACR name (globally unique, lowercase, alphanumeric)"
+
+                if ($acrName -notmatch "^[a-z0-9]{5,50}$") {
+
+                    Write-Host ""
+                    Write-Host "Invalid ACR name." -ForegroundColor Red
+                    Write-Host "ACR names must contain only lowercase letters and numbers and be 5-50 characters long." -ForegroundColor Yellow
+                    continue
+                }
+
+                $acrNameCheck = az acr check-name `
+                    --name $acrName `
+                    --query nameAvailable `
+                    --output tsv `
+                    2>$null
+
+                if ($acrNameCheck -eq "true") {
+
+                    Write-Host "ACR name '$acrName' is available." -ForegroundColor Green
+                    break
+                }
+
+                Write-Host "ACR name '$acrName' is already used." -ForegroundColor Red
+
+            } while ($true)
+
+            Invoke-Az @(
+                "acr",
+                "create",
+                "--resource-group",
+                $resourceGroup,
+                "--name",
+                $acrName,
+                "--location",
+                $location,
+                "--sku",
+                "Basic",
+                "--admin-enabled",
+                "false"
+            )
+
+            Write-Host "ACR created." -ForegroundColor Green
+
+        }
+        else {
+
+            $selectedAcr = $allAcrs[$acrChoice - 1]
+
+            $acrName = $selectedAcr.Name
+
+            Write-Host ""
+            Write-Host "Using existing ACR:" -ForegroundColor Green
+            Write-Host "  $acrName"
+            Write-Host "  Resource Group: $($selectedAcr.ResourceGroup)"
+        }
+
+    }
+    else {
 
         do {
 
@@ -544,9 +992,7 @@ if ($allAcrs) {
 
             if ($acrName -notmatch "^[a-z0-9]{5,50}$") {
 
-                Write-Host ""
                 Write-Host "Invalid ACR name." -ForegroundColor Red
-                Write-Host "ACR names must contain only lowercase letters and numbers and be 5-50 characters long." -ForegroundColor Yellow
                 continue
             }
 
@@ -557,12 +1003,10 @@ if ($allAcrs) {
                 2>$null
 
             if ($acrNameCheck -eq "true") {
-
-                Write-Host "ACR name '$acrName' is available." -ForegroundColor Green
                 break
             }
 
-            Write-Host "ACR name '$acrName' is already used." -ForegroundColor Red
+            Write-Host "ACR name is already used. Choose another." -ForegroundColor Yellow
 
         } while ($true)
 
@@ -582,66 +1026,7 @@ if ($allAcrs) {
         )
 
         Write-Host "ACR created." -ForegroundColor Green
-
     }
-    else {
-
-        $selectedAcr = $allAcrs[$acrChoice - 1]
-
-        $acrName = $selectedAcr.Name
-        $acrLoginServer = $selectedAcr.LoginServer
-        $acrResourceGroup = $selectedAcr.ResourceGroup
-
-        Write-Host ""
-        Write-Host "Using existing ACR:" -ForegroundColor Green
-        Write-Host "  $acrName"
-        Write-Host "  Resource Group: $acrResourceGroup"
-    }
-
-}
-else {
-
-    do {
-
-        $acrName = Read-RequiredValue `
-            "New ACR name (globally unique, lowercase, alphanumeric)"
-
-        if ($acrName -notmatch "^[a-z0-9]{5,50}$") {
-
-            Write-Host "Invalid ACR name." -ForegroundColor Red
-            continue
-        }
-
-        $acrNameCheck = az acr check-name `
-            --name $acrName `
-            --query nameAvailable `
-            --output tsv `
-            2>$null
-
-        if ($acrNameCheck -eq "true") {
-            break
-        }
-
-        Write-Host "ACR name is already used. Choose another." -ForegroundColor Yellow
-
-    } while ($true)
-
-    Invoke-Az @(
-        "acr",
-        "create",
-        "--resource-group",
-        $resourceGroup,
-        "--name",
-        $acrName,
-        "--location",
-        $location,
-        "--sku",
-        "Basic",
-        "--admin-enabled",
-        "false"
-    )
-
-    Write-Host "ACR created." -ForegroundColor Green
 }
 
 $acrInfoJson = az acr show `
@@ -660,6 +1045,7 @@ $acrResourceGroup = $acrInfo.resourceGroup
 
 Write-Host ""
 Write-Host "ACR login server: $acrLoginServer" -ForegroundColor Green
+Write-Host "ACR Resource Group: $acrResourceGroup" -ForegroundColor DarkGray
 
 # ============================================================
 # Application names
@@ -667,75 +1053,68 @@ Write-Host "ACR login server: $acrLoginServer" -ForegroundColor Green
 
 Write-Step "Application configuration"
 
-$containerAppName = Read-RequiredValue "Container App name"
+$containerAppName = Read-ConfigOrPrompt `
+    -Name "containerAppName" `
+    -Prompt "Container App name"
 
-$postgresServerName = Read-RequiredValue `
-    "PostgreSQL server name (globally unique, lowercase)"
+$postgresServerName = Read-ConfigOrPrompt `
+    -Name "postgresServerName" `
+    -Prompt "PostgreSQL server name (globally unique, lowercase)"
 
-$postgresAdmin = Read-RequiredValue "PostgreSQL admin username"
+$postgresAdmin = Read-ConfigOrPrompt `
+    -Name "postgresAdmin" `
+    -Prompt "PostgreSQL admin username"
 
+# Password is intentionally NEVER loaded from config.json.
 $postgresPassword = Read-PasswordValue `
     "PostgreSQL admin password"
 
-$databaseName = "tasks"
+$databaseName = Read-ConfigOrPrompt `
+    -Name "databaseName" `
+    -Prompt "PostgreSQL database name"
 
 $imageName = $containerAppName
 
-$imageTag = "v1"
+$imageTag = Read-ConfigOrPrompt `
+    -Name "imageTag" `
+    -Prompt "Docker image tag"
 
 $imageFullName = "$acrLoginServer/$imageName`:$imageTag"
 
 # ============================================================
-# PostgreSQL name validation
+# PostgreSQL Flexible Server discovery
 # ============================================================
 
-Write-Step "Checking PostgreSQL server name"
+Write-Step "Checking PostgreSQL server"
 
-$postgresInSubscriptionJson = az postgres flexible-server list `
-    --query "[].{Name:name,ResourceGroup:resourceGroup,Location:location}" `
-    --output json `
-    2>$null
-
-$postgresInSubscription = $postgresInSubscriptionJson | ConvertFrom-Json
-
-if (
-    $postgresInSubscription -and
-    $postgresInSubscription -isnot [System.Array]
-) {
-    $postgresInSubscription = @($postgresInSubscription)
-}
+$postgresServer = Find-PostgresServer $postgresServerName
 
 $postgresExists = $false
+$postgresResourceGroup = $resourceGroup
 
-if ($postgresInSubscription) {
+if ($postgresServer) {
 
-    foreach ($server in $postgresInSubscription) {
+    $postgresExists = $true
 
-        if ($server.Name -eq $postgresServerName) {
-
-            $postgresExists = $true
-
-            Write-Host ""
-            Write-Host "PostgreSQL server already exists:" -ForegroundColor Yellow
-            Write-Host "  Name: $($server.Name)"
-            Write-Host "  Resource Group: $($server.ResourceGroup)"
-            Write-Host "  Location: $($server.Location)"
-        }
-    }
-}
-
-if ($postgresExists) {
+    $postgresResourceGroup = $postgresServer.resourceGroup
 
     Write-Host ""
-    Write-Host "Existing PostgreSQL server will be reused." -ForegroundColor Yellow
+    Write-Host "PostgreSQL server already exists:" -ForegroundColor Yellow
+    Write-Host "  Name:           $($postgresServer.name)"
+    Write-Host "  Resource Group: $postgresResourceGroup"
+    Write-Host "  Location:       $($postgresServer.location)"
+    Write-Host ""
+    Write-Host "Existing PostgreSQL server will be reused." -ForegroundColor Green
     Write-Host "Make sure the password you entered belongs to this server." -ForegroundColor Yellow
 
 }
 else {
 
     Write-Host ""
-    Write-Host "PostgreSQL name is not used in the current subscription." -ForegroundColor Green
-    Write-Host "Note: Azure PostgreSQL server names are globally unique." -ForegroundColor DarkGray
+    Write-Host "PostgreSQL server '$postgresServerName' was not found." -ForegroundColor Green
+    Write-Host "It will be created in Resource Group '$resourceGroup'." -ForegroundColor DarkGray
+
+    $postgresResourceGroup = $resourceGroup
 }
 
 # ============================================================
@@ -744,41 +1123,129 @@ else {
 
 Write-Step "Container Apps Environment"
 
-$existingEnvironmentsJson = az containerapp env list `
-    --output json
+$configEnvironmentName = Get-ConfigValue "environmentName"
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not retrieve Container Apps Environments."
+if ($configEnvironmentName) {
+
+    $environmentName = $configEnvironmentName
+
+    Write-Host "Container Apps Environment from config:" -ForegroundColor Green
+    Write-Host "  $environmentName"
+
+    # IMPORTANT:
+    # Do NOT assume the environment is inside $resourceGroup.
+    # Search the entire current subscription.
+    $selectedEnvironment = Find-ContainerAppEnvironment $environmentName
+
+    if ($selectedEnvironment) {
+
+        $environmentResourceGroup = $selectedEnvironment.resourceGroup
+
+        Write-Host ""
+        Write-Host "Container Apps Environment found automatically." -ForegroundColor Green
+        Write-Host "  Name:           $environmentName"
+        Write-Host "  Resource Group: $environmentResourceGroup"
+        Write-Host "  Location:       $($selectedEnvironment.location)"
+
+        Write-Host ""
+        Write-Host "Using existing Container Apps Environment." -ForegroundColor Green
+    }
+    else {
+
+        Write-Host ""
+        Write-Host "Environment '$environmentName' was not found in the current subscription." -ForegroundColor Yellow
+        Write-Host "Creating it in Resource Group '$resourceGroup'..." -ForegroundColor Yellow
+
+        Invoke-Az @(
+            "containerapp",
+            "env",
+            "create",
+            "--name",
+            $environmentName,
+            "--resource-group",
+            $resourceGroup,
+            "--location",
+            $location
+        )
+
+        $environmentResourceGroup = $resourceGroup
+
+        Write-Host "Container Apps Environment created." -ForegroundColor Green
+    }
+
 }
+else {
 
-$existingEnvironments = $existingEnvironmentsJson | ConvertFrom-Json
+    $existingEnvironmentsJson = az containerapp env list `
+        --output json
 
-if (
-    $existingEnvironments -and
-    $existingEnvironments -isnot [System.Array]
-) {
-    $existingEnvironments = @($existingEnvironments)
-}
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not retrieve Container Apps Environments."
+    }
 
-Write-Host ""
-Write-Host "[0] Create a new Container Apps Environment" -ForegroundColor Cyan
+    $existingEnvironments = $existingEnvironmentsJson | ConvertFrom-Json
 
-if ($existingEnvironments) {
-
-    for ($i = 0; $i -lt $existingEnvironments.Count; $i++) {
-
-        Write-Host "[$($i + 1)] Use '$($existingEnvironments[$i].name)'"
-        Write-Host "    Resource Group: $($existingEnvironments[$i].resourceGroup)"
-        Write-Host "    Location:       $($existingEnvironments[$i].location)"
+    if (
+        $existingEnvironments -and
+        $existingEnvironments -isnot [System.Array]
+    ) {
+        $existingEnvironments = @($existingEnvironments)
     }
 
     Write-Host ""
+    Write-Host "[0] Create a new Container Apps Environment" -ForegroundColor Cyan
 
-    $environmentChoice = Read-Choice `
-        -Prompt "Select Environment option" `
-        -Max ($existingEnvironments.Count + 1)
+    if ($existingEnvironments) {
 
-    if ($environmentChoice -eq 0) {
+        for ($i = 0; $i -lt $existingEnvironments.Count; $i++) {
+
+            Write-Host "[$($i + 1)] Use '$($existingEnvironments[$i].name)'"
+            Write-Host "    Resource Group: $($existingEnvironments[$i].resourceGroup)"
+            Write-Host "    Location:       $($existingEnvironments[$i].location)"
+        }
+
+        Write-Host ""
+
+        $environmentChoice = Read-Choice `
+            -Prompt "Select Environment option" `
+            -Max ($existingEnvironments.Count + 1)
+
+        if ($environmentChoice -eq 0) {
+
+            $environmentName = Read-RequiredValue `
+                "New Container Apps Environment name"
+
+            Invoke-Az @(
+                "containerapp",
+                "env",
+                "create",
+                "--name",
+                $environmentName,
+                "--resource-group",
+                $resourceGroup,
+                "--location",
+                $location
+            )
+
+            $environmentResourceGroup = $resourceGroup
+
+            Write-Host "Container Apps Environment created." -ForegroundColor Green
+        }
+        else {
+
+            $selectedEnvironment = $existingEnvironments[$environmentChoice - 1]
+
+            $environmentName = $selectedEnvironment.name
+            $environmentResourceGroup = $selectedEnvironment.resourceGroup
+
+            Write-Host ""
+            Write-Host "Using existing Container Apps Environment:" -ForegroundColor Green
+            Write-Host "  $environmentName"
+            Write-Host "  Resource Group: $environmentResourceGroup"
+        }
+
+    }
+    else {
 
         $environmentName = Read-RequiredValue `
             "New Container Apps Environment name"
@@ -799,41 +1266,11 @@ if ($existingEnvironments) {
 
         Write-Host "Container Apps Environment created." -ForegroundColor Green
     }
-    else {
-
-        $selectedEnvironment = $existingEnvironments[$environmentChoice - 1]
-
-        $environmentName = $selectedEnvironment.name
-        $environmentResourceGroup = $selectedEnvironment.resourceGroup
-
-        Write-Host ""
-        Write-Host "Using existing Container Apps Environment:" -ForegroundColor Green
-        Write-Host "  $environmentName"
-        Write-Host "  Resource Group: $environmentResourceGroup"
-    }
-
 }
-else {
 
-    $environmentName = Read-RequiredValue `
-        "New Container Apps Environment name"
-
-    Invoke-Az @(
-        "containerapp",
-        "env",
-        "create",
-        "--name",
-        $environmentName,
-        "--resource-group",
-        $resourceGroup,
-        "--location",
-        $location
-    )
-
-    $environmentResourceGroup = $resourceGroup
-
-    Write-Host "Container Apps Environment created." -ForegroundColor Green
-}
+# ============================================================
+# Environment resource ID
+# ============================================================
 
 $environmentId = az containerapp env show `
     --name $environmentName `
@@ -845,71 +1282,114 @@ if ([string]::IsNullOrWhiteSpace($environmentId)) {
     throw "Could not determine Container Apps Environment resource ID."
 }
 
+Write-Host ""
+Write-Host "Environment ID:" -ForegroundColor Green
+Write-Host "  $environmentId" -ForegroundColor DarkGray
+
 # ============================================================
 # Container App
 # ============================================================
 
 Write-Step "Container App"
 
-$existingAppsJson = az containerapp list `
-    --output json
+$configContainerAppName = Get-ConfigValue "containerAppName"
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not retrieve Container Apps."
-}
+$containerAppExists = $false
 
-$existingApps = $existingAppsJson | ConvertFrom-Json
+if ($configContainerAppName) {
 
-if ($existingApps -and $existingApps -isnot [System.Array]) {
-    $existingApps = @($existingApps)
-}
+    $containerAppName = $configContainerAppName
 
-Write-Host ""
-Write-Host "[0] Create a new Container App" -ForegroundColor Cyan
+    # IMPORTANT:
+    # Search the entire subscription instead of assuming
+    # that Container App is in $resourceGroup.
+    $existingApp = Find-ContainerApp $containerAppName
 
-if ($existingApps) {
+    if ($existingApp) {
 
-    for ($i = 0; $i -lt $existingApps.Count; $i++) {
+        $containerAppExists = $true
+        $containerAppResourceGroup = $existingApp.resourceGroup
 
-        Write-Host "[$($i + 1)] Use '$($existingApps[$i].name)'"
-        Write-Host "    Resource Group: $($existingApps[$i].resourceGroup)"
-    }
-
-    Write-Host ""
-
-    $appChoice = Read-Choice `
-        -Prompt "Select Container App option" `
-        -Max ($existingApps.Count + 1)
-
-    if ($appChoice -eq 0) {
-
-        $containerAppName = Read-RequiredValue `
-            "New Container App name"
-
-        $containerAppExists = $false
+        Write-Host "Container App found automatically:" -ForegroundColor Green
+        Write-Host "  Name:           $containerAppName"
+        Write-Host "  Resource Group: $containerAppResourceGroup"
 
     }
     else {
 
-        $selectedApp = $existingApps[$appChoice - 1]
+        $containerAppResourceGroup = $resourceGroup
 
-        $containerAppName = $selectedApp.name
-        $containerAppResourceGroup = $selectedApp.resourceGroup
-        $containerAppExists = $true
-
-        Write-Host ""
-        Write-Host "Using existing Container App:" -ForegroundColor Green
-        Write-Host "  $containerAppName"
+        Write-Host "Container App does not exist." -ForegroundColor Yellow
+        Write-Host "It will be created in:" -ForegroundColor Green
         Write-Host "  Resource Group: $containerAppResourceGroup"
+        Write-Host "  Name:           $containerAppName"
     }
 
 }
 else {
 
-    $containerAppName = Read-RequiredValue `
-        "New Container App name"
+    $existingAppsJson = az containerapp list `
+        --output json
 
-    $containerAppExists = $false
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not retrieve Container Apps."
+    }
+
+    $existingApps = $existingAppsJson | ConvertFrom-Json
+
+    if ($existingApps -and $existingApps -isnot [System.Array]) {
+        $existingApps = @($existingApps)
+    }
+
+    Write-Host ""
+    Write-Host "[0] Create a new Container App" -ForegroundColor Cyan
+
+    if ($existingApps) {
+
+        for ($i = 0; $i -lt $existingApps.Count; $i++) {
+
+            Write-Host "[$($i + 1)] Use '$($existingApps[$i].name)'"
+            Write-Host "    Resource Group: $($existingApps[$i].resourceGroup)"
+        }
+
+        Write-Host ""
+
+        $appChoice = Read-Choice `
+            -Prompt "Select Container App option" `
+            -Max ($existingApps.Count + 1)
+
+        if ($appChoice -eq 0) {
+
+            $containerAppName = Read-RequiredValue `
+                "New Container App name"
+
+            $containerAppResourceGroup = $resourceGroup
+            $containerAppExists = $false
+
+        }
+        else {
+
+            $selectedApp = $existingApps[$appChoice - 1]
+
+            $containerAppName = $selectedApp.name
+            $containerAppResourceGroup = $selectedApp.resourceGroup
+            $containerAppExists = $true
+
+            Write-Host ""
+            Write-Host "Using existing Container App:" -ForegroundColor Green
+            Write-Host "  $containerAppName"
+            Write-Host "  Resource Group: $containerAppResourceGroup"
+        }
+
+    }
+    else {
+
+        $containerAppName = Read-RequiredValue `
+            "New Container App name"
+
+        $containerAppResourceGroup = $resourceGroup
+        $containerAppExists = $false
+    }
 }
 
 # ============================================================
@@ -923,10 +1403,6 @@ $imageRepositoryExists = $false
 $imageTagExists = $false
 
 Write-Host "Checking repository '$imageName' in ACR '$acrName'..." -ForegroundColor Cyan
-
-# ------------------------------------------------------------
-# Check repository
-# ------------------------------------------------------------
 
 $oldErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
@@ -946,10 +1422,12 @@ try {
 finally {
 
     $ErrorActionPreference = $oldErrorActionPreference
-
 }
 
-if ($repositoryExitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($repositoryOutput)) {
+if (
+    $repositoryExitCode -eq 0 -and
+    -not [string]::IsNullOrWhiteSpace($repositoryOutput)
+) {
 
     $imageRepositoryExists = $true
 
@@ -964,12 +1442,11 @@ else {
     Write-Host "  Repository: $imageName" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "This is normal for a first installation." -ForegroundColor Cyan
-
 }
 
-# ------------------------------------------------------------
+# ============================================================
 # Check image tag
-# ------------------------------------------------------------
+# ============================================================
 
 if ($imageRepositoryExists) {
 
@@ -991,10 +1468,12 @@ if ($imageRepositoryExists) {
     finally {
 
         $ErrorActionPreference = $oldErrorActionPreference
-
     }
 
-    if ($tagExitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($tagOutput)) {
+    if (
+        $tagExitCode -eq 0 -and
+        -not [string]::IsNullOrWhiteSpace($tagOutput)
+    ) {
 
         $imageTagExists = $true
         $imageExists = $true
@@ -1008,13 +1487,12 @@ if ($imageRepositoryExists) {
         Write-Host ""
         Write-Host "Repository exists, but image tag '$imageTag' was not found." -ForegroundColor Yellow
         Write-Host "A new image will be built and pushed." -ForegroundColor Cyan
-
     }
 }
 
-# ------------------------------------------------------------
+# ============================================================
 # Decide whether to build image
-# ------------------------------------------------------------
+# ============================================================
 
 if ($imageExists) {
 
@@ -1030,14 +1508,12 @@ if ($imageExists) {
         $buildImage = $false
 
         Write-Host "Existing image will be used." -ForegroundColor Green
-
     }
     else {
 
         $buildImage = $true
 
         Write-Host "Image will be rebuilt and pushed." -ForegroundColor Yellow
-
     }
 
 }
@@ -1048,7 +1524,6 @@ else {
     Write-Host ""
     Write-Host "Docker image is not available in ACR." -ForegroundColor Yellow
     Write-Host "A new image will be built and pushed." -ForegroundColor Green
-
 }
 
 # ============================================================
@@ -1057,13 +1532,18 @@ else {
 
 Write-Step "Configuration summary"
 
+Write-Host "Subscription   : $subscriptionName"
 Write-Host "Resource Group : $resourceGroup"
 Write-Host "Location       : $location"
 Write-Host "ACR            : $acrName"
+Write-Host "ACR RG         : $acrResourceGroup"
 Write-Host "ACR Server     : $acrLoginServer"
 Write-Host "Environment    : $environmentName"
+Write-Host "Environment RG : $environmentResourceGroup"
 Write-Host "Container App  : $containerAppName"
+Write-Host "Container App RG: $containerAppResourceGroup"
 Write-Host "PostgreSQL     : $postgresServerName"
+Write-Host "PostgreSQL RG  : $postgresResourceGroup"
 Write-Host "Database       : $databaseName"
 Write-Host "Image          : $imageFullName"
 Write-Host "Build Image    : $buildImage"
@@ -1118,15 +1598,12 @@ if ($buildImage) {
     }
 
     Write-Host "Image pushed successfully." -ForegroundColor Green
-
 }
 else {
 
     Write-Host ""
     Write-Host "Skipping Docker build and push." -ForegroundColor Yellow
-
 }
-
 
 # ============================================================
 # PostgreSQL Flexible Server
@@ -1137,7 +1614,7 @@ Write-Step "PostgreSQL Flexible Server"
 if ($postgresExists) {
 
     Write-Host "Using existing PostgreSQL server: $postgresServerName" -ForegroundColor Yellow
-
+    Write-Host "Resource Group: $postgresResourceGroup" -ForegroundColor DarkGray
 }
 else {
 
@@ -1149,7 +1626,7 @@ else {
         "flexible-server",
         "create",
         "--resource-group",
-        $resourceGroup,
+        $postgresResourceGroup,
         "--name",
         $postgresServerName,
         "--location",
@@ -1181,7 +1658,7 @@ else {
 Write-Step "PostgreSQL database"
 
 $dbListJson = az postgres flexible-server db list `
-    --resource-group $resourceGroup `
+    --resource-group $postgresResourceGroup `
     --server-name $postgresServerName `
     --query "[].name" `
     --output json `
@@ -1206,7 +1683,6 @@ if ($dbList) {
 if ($dbExists) {
 
     Write-Host "Database already exists: $databaseName" -ForegroundColor Yellow
-
 }
 else {
 
@@ -1218,10 +1694,10 @@ else {
         "db",
         "create",
         "--resource-group",
-        $resourceGroup,
+        $postgresResourceGroup,
         "--server-name",
         $postgresServerName,
-        "--name",
+        "--database-name",
         $databaseName
     )
 
@@ -1233,7 +1709,7 @@ else {
 # ============================================================
 
 $postgresFqdn = az postgres flexible-server show `
-    --resource-group $resourceGroup `
+    --resource-group $postgresResourceGroup `
     --name $postgresServerName `
     --query fullyQualifiedDomainName `
     --output tsv
@@ -1253,7 +1729,6 @@ Write-Step "Container App"
 if ($containerAppExists) {
 
     Write-Host "Using existing Container App: $containerAppName" -ForegroundColor Yellow
-
 }
 else {
 
@@ -1265,7 +1740,7 @@ else {
         "--name",
         $containerAppName,
         "--resource-group",
-        $resourceGroup,
+        $containerAppResourceGroup,
         "--environment",
         $environmentId,
         "--image",
@@ -1300,7 +1775,7 @@ Write-Step "Configuring Container App managed identity"
 
 $principalId = az containerapp show `
     --name $containerAppName `
-    --resource-group $resourceGroup `
+    --resource-group $containerAppResourceGroup `
     --query identity.principalId `
     --output tsv
 
@@ -1316,13 +1791,13 @@ if ([string]::IsNullOrWhiteSpace($principalId)) {
         "--name",
         $containerAppName,
         "--resource-group",
-        $resourceGroup,
+        $containerAppResourceGroup,
         "--system-assigned"
     )
 
     $principalId = az containerapp show `
         --name $containerAppName `
-        --resource-group $resourceGroup `
+        --resource-group $containerAppResourceGroup `
         --query identity.principalId `
         --output tsv
 }
@@ -1369,7 +1844,6 @@ if ([string]::IsNullOrWhiteSpace($existingRole)) {
 
     Write-Host "Waiting for RBAC propagation..." -ForegroundColor DarkGray
     Start-Sleep -Seconds 15
-
 }
 else {
 
@@ -1389,7 +1863,7 @@ Invoke-Az @(
     "--name",
     $containerAppName,
     "--resource-group",
-    $resourceGroup,
+    $containerAppResourceGroup,
     "--server",
     $acrLoginServer,
     "--identity",
@@ -1424,7 +1898,6 @@ $encodedPassword = [System.Uri]::EscapeDataString($postgresPassword)
 
 $databaseUrl = "postgresql://${postgresAdmin}:${encodedPassword}@${postgresFqdn}:5432/${databaseName}?sslmode=require"
 
-# Validate URL structure.
 try {
 
     $databaseUri = [System.Uri]$databaseUrl
@@ -1436,7 +1909,6 @@ try {
     ) {
         throw "Invalid PostgreSQL connection URL."
     }
-
 }
 catch {
 
@@ -1464,7 +1936,7 @@ Invoke-Az @(
     "--name",
     $containerAppName,
     "--resource-group",
-    $resourceGroup,
+    $containerAppResourceGroup,
     "--secrets",
     "database-url=$databaseUrl"
 )
@@ -1483,7 +1955,7 @@ Invoke-Az @(
     "--name",
     $containerAppName,
     "--resource-group",
-    $resourceGroup,
+    $containerAppResourceGroup,
     "--set-env-vars",
     "DATABASE_URL=secretref:database-url"
 )
@@ -1535,11 +2007,10 @@ try {
         "--name",
         $containerAppName,
         "--resource-group",
-        $resourceGroup,
+        $containerAppResourceGroup,
         "--yaml",
         $tempProbeFile
     )
-
 }
 finally {
 
@@ -1563,7 +2034,7 @@ Invoke-Az @(
     "--name",
     $containerAppName,
     "--resource-group",
-    $resourceGroup,
+    $containerAppResourceGroup,
     "--image",
     $imageFullName
 )
@@ -1578,14 +2049,15 @@ Write-Step "Getting application URL"
 
 $fqdn = az containerapp show `
     --name $containerAppName `
-    --resource-group $resourceGroup `
+    --resource-group $containerAppResourceGroup `
     --query "properties.configuration.ingress.fqdn" `
     --output tsv
+
+$appUrl = $null
 
 if ([string]::IsNullOrWhiteSpace($fqdn)) {
 
     Write-Host "Could not determine application URL." -ForegroundColor Yellow
-
 }
 else {
 
@@ -1607,8 +2079,17 @@ Write-Host "Container App:" -ForegroundColor Yellow
 
 az containerapp show `
     --name $containerAppName `
-    --resource-group $resourceGroup `
-    --query "{name:name,provisioningState:properties.provisioningState,runningState:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" `
+    --resource-group $containerAppResourceGroup `
+    --query "{name:name,resourceGroup:resourceGroup,provisioningState:properties.provisioningState,runningState:properties.runningStatus,fqdn:properties.configuration.ingress.fqdn}" `
+    -o table
+
+Write-Host ""
+Write-Host "Container Apps Environment:" -ForegroundColor Yellow
+
+az containerapp env show `
+    --name $environmentName `
+    --resource-group $environmentResourceGroup `
+    --query "{name:name,resourceGroup:resourceGroup,location:location}" `
     -o table
 
 Write-Host ""
@@ -1616,8 +2097,8 @@ Write-Host "PostgreSQL:" -ForegroundColor Yellow
 
 az postgres flexible-server show `
     --name $postgresServerName `
-    --resource-group $resourceGroup `
-    --query "{name:name,state:state,version:version,fqdn:fullyQualifiedDomainName}" `
+    --resource-group $postgresResourceGroup `
+    --query "{name:name,resourceGroup:resourceGroup,state:state,version:version,fqdn:fullyQualifiedDomainName}" `
     -o table
 
 Write-Host ""
@@ -1625,7 +2106,7 @@ Write-Host "DATABASE_URL environment variable:" -ForegroundColor Yellow
 
 az containerapp show `
     --name $containerAppName `
-    --resource-group $resourceGroup `
+    --resource-group $containerAppResourceGroup `
     --query "properties.template.containers[0].env[?name=='DATABASE_URL']" `
     -o table
 
@@ -1644,6 +2125,7 @@ if ($appUrl) {
     Write-Host "Application:" -ForegroundColor Cyan
     Write-Host "  $appUrl" -ForegroundColor White
     Write-Host ""
+
     Write-Host "Swagger:" -ForegroundColor Cyan
     Write-Host "  $appUrl/docs" -ForegroundColor White
 }
@@ -1652,9 +2134,13 @@ Write-Host ""
 Write-Host "Azure resources:" -ForegroundColor Cyan
 Write-Host "  Resource Group : $resourceGroup"
 Write-Host "  ACR            : $acrLoginServer"
+Write-Host "  ACR RG         : $acrResourceGroup"
 Write-Host "  Container App  : $containerAppName"
+Write-Host "  Container App RG: $containerAppResourceGroup"
 Write-Host "  Environment    : $environmentName"
+Write-Host "  Environment RG : $environmentResourceGroup"
 Write-Host "  PostgreSQL     : $postgresFqdn"
+Write-Host "  PostgreSQL RG  : $postgresResourceGroup"
 Write-Host "  Database       : $databaseName"
 
 Write-Host ""
@@ -1677,6 +2163,20 @@ Write-Host "Important:" -ForegroundColor Yellow
 Write-Host "The PostgreSQL password was entered only during this installation."
 Write-Host "DATABASE_URL is stored as a Container App secret."
 Write-Host "GitHub Actions are NOT required for this installation."
+
+if ($configData) {
+
+    Write-Host ""
+    Write-Host "Configuration:" -ForegroundColor Cyan
+    Write-Host "  Loaded from: $configPath"
+    Write-Host "  PostgreSQL password: interactive input only"
+}
+else {
+
+    Write-Host ""
+    Write-Host "Configuration:" -ForegroundColor Cyan
+    Write-Host "  Interactive mode"
+}
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green

@@ -1,0 +1,21 @@
+{
+    "subscriptionId": "",
+
+    "location": "polandcentral",
+
+    "resourceGroup": "rg-task-manager",
+
+    "acrName": "chinazes",
+
+    "environmentName": "docker-demo-env",
+
+    "containerAppName": "containerapp-task-manager",
+
+    "postgresServerName": "chinazes",
+
+    "postgresAdmin": "taskuser",
+
+    "databaseName": "tasks",
+
+    "imageTag": "latest"
+}
