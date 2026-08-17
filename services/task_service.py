@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 
 from database.connection import get_database_connection
 
+from services.activity_service import log_activity
+
 from schemas.task_schema import (
     TaskCreate,
     TaskUpdate
@@ -56,6 +58,14 @@ def create_task(
         )
 
         task_id = cursor.fetchone()["id"]
+        
+        log_activity(
+            connection=connection,
+            user_id=user_id,
+            task_id=task_id,
+            action="created",
+            description=f'Created task "{task.title}"'
+        )
 
         connection.commit()
 
@@ -290,6 +300,14 @@ def update_task(
                 user_id
             )
         )
+        
+        log_activity(
+        connection=connection,
+        user_id=user_id,
+        task_id=task_id,
+        action="updated",
+        description=f"Task '{new_title}' was updated"
+)
 
         connection.commit()
 
@@ -332,7 +350,35 @@ def delete_task(
 
     try:
 
-        cursor = connection.execute(
+        existing_task = connection.execute(
+            """
+            SELECT
+                id,
+                title
+            FROM tasks
+            WHERE id = %s
+            AND user_id = %s
+            """,
+            (
+                task_id,
+                user_id
+            )
+        ).fetchone()
+
+        if existing_task is None:
+            return False
+
+
+        log_activity(
+            connection=connection,
+            user_id=user_id,
+            task_id=task_id,
+            action="deleted",
+            description=f"Task '{existing_task['title']}' was deleted"
+        )
+
+
+        connection.execute(
             """
             DELETE FROM tasks
             WHERE id = %s
@@ -344,9 +390,10 @@ def delete_task(
             )
         )
 
+
         connection.commit()
 
-        return cursor.rowcount > 0
+        return True
 
     finally:
 

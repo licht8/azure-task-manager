@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Analytics - Task Manager</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css?v=analytics1"
+    >
+
+</head>
+
+
+<body>
+
+<div class="app-shell">
+
+    <!-- ======================================================
+         SIDEBAR
+         ====================================================== -->
+
+    <aside class="sidebar">
+
+		<div class="brand">
+
+			<div class="brand-logo">
+				<img
+					src="/static/logo.png"
+					alt="Task Manager"
+				>
+			</div>
+
+			<div class="brand-text">
+
+				<div class="brand-title">
+					Task Manager
+				</div>
+
+				<div class="brand-subtitle">
+					Docker Azure Demo
+				</div>
+
+			</div>
+
+		</div>
+
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-title">
+                WORKSPACE
+            </div>
+
+
+            <a
+                href="/"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▣
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="/static/calendar.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Calendar
+
+            </a>
+
+
+            <a
+                href="/static/analytics.html"
+                class="nav-item active"
+            >
+
+                <span class="nav-icon">
+                    ◈
+                </span>
+
+                Analytics
+
+            </a>
+
+        </nav>
+
+
+        <!-- ==================================================
+             USER PROFILE
+             ================================================== -->
+
+        <div class="sidebar-profile">
+
+            <div class="profile-user">
+
+                <div
+                    class="profile-avatar"
+                    id="profileAvatar"
+                >
+                    U
+                </div>
+
+                <div class="profile-info">
+
+                    <div
+                        class="profile-name"
+                        id="profileName"
+                    >
+                        Loading...
+                    </div>
+
+                    <div class="profile-role">
+                        User
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-actions">
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="settingsButton"
+                >
+
+                    <span>⚙</span>
+
+                    Settings
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="logoutButton"
+                >
+
+                    <span>⇥</span>
+
+                    Logout
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ======================================================
+         MAIN CONTENT
+         ====================================================== -->
+
+    <main class="main-content">
+
+
+        <div class="topbar">
+
+            <div>
+
+                <div class="breadcrumb">
+                    Workspace / Analytics
+                </div>
+
+                <h1>
+                    Analytics
+                </h1>
+
+                <p class="page-subtitle">
+                    Understand your task activity and productivity.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             STATISTICS
+             ================================================== -->
+
+        <section class="analytics-stats">
+
+
+            <div class="analytics-stat-card">
+
+                <div class="analytics-stat-label">
+                    TOTAL TASKS
+                </div>
+
+                <div
+                    class="analytics-stat-value"
+                    id="totalTasks"
+                >
+                    0
+                </div>
+
+                <div class="analytics-stat-description">
+                    All active tasks
+                </div>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <div class="analytics-stat-label">
+                    COMPLETED
+                </div>
+
+                <div
+                    class="analytics-stat-value completed"
+                    id="completedTasks"
+                >
+                    0
+                </div>
+
+                <div class="analytics-stat-description">
+                    Finished tasks
+                </div>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <div class="analytics-stat-label">
+                    IN PROGRESS
+                </div>
+
+                <div
+                    class="analytics-stat-value progress"
+                    id="progressTasks"
+                >
+                    0
+                </div>
+
+                <div class="analytics-stat-description">
+                    Currently working on
+                </div>
+
+            </div>
+
+
+            <div class="analytics-stat-card">
+
+                <div class="analytics-stat-label">
+                    OVERDUE
+                </div>
+
+                <div
+                    class="analytics-stat-value overdue"
+                    id="overdueTasks"
+                >
+                    0
+                </div>
+
+                <div class="analytics-stat-description">
+                    Need your attention
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- ==================================================
+             CHARTS
+             ================================================== -->
+
+        <section class="analytics-grid">
+
+
+            <!-- Task status -->
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-header">
+
+                    <div>
+
+                        <div class="analytics-eyebrow">
+                            STATUS
+                        </div>
+
+                        <h2>
+                            Task status
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="analytics-bars">
+
+
+                    <div class="analytics-bar-row">
+
+                        <div class="analytics-bar-info">
+
+                            <span>
+                                Pending
+                            </span>
+
+                            <strong id="pendingCount">
+                                0
+                            </strong>
+
+                        </div>
+
+                        <div class="analytics-bar-track">
+
+                            <div
+                                class="analytics-bar pending"
+                                id="pendingBar"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="analytics-bar-row">
+
+                        <div class="analytics-bar-info">
+
+                            <span>
+                                In Progress
+                            </span>
+
+                            <strong id="inProgressCount">
+                                0
+                            </strong>
+
+                        </div>
+
+                        <div class="analytics-bar-track">
+
+                            <div
+                                class="analytics-bar progress"
+                                id="inProgressBar"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="analytics-bar-row">
+
+                        <div class="analytics-bar-info">
+
+                            <span>
+                                Completed
+                            </span>
+
+                            <strong id="completedCount">
+                                0
+                            </strong>
+
+                        </div>
+
+                        <div class="analytics-bar-track">
+
+                            <div
+                                class="analytics-bar completed"
+                                id="completedBar"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- Priority -->
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-header">
+
+                    <div>
+
+                        <div class="analytics-eyebrow">
+                            PRIORITY
+                        </div>
+
+                        <h2>
+                            Task priority
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="analytics-bars">
+
+
+                    <div class="analytics-bar-row">
+
+                        <div class="analytics-bar-info">
+
+                            <span>
+                                Low
+                            </span>
+
+                            <strong id="lowPriority">
+                                0
+                            </strong>
+
+                        </div>
+
+                        <div class="analytics-bar-track">
+
+                            <div
+                                class="analytics-bar low"
+                                id="lowBar"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="analytics-bar-row">
+
+                        <div class="analytics-bar-info">
+
+                            <span>
+                                Medium
+                            </span>
+
+                            <strong id="mediumPriority">
+                                0
+                            </strong>
+
+                        </div>
+
+                        <div class="analytics-bar-track">
+
+                            <div
+                                class="analytics-bar medium"
+                                id="mediumBar"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="analytics-bar-row">
+
+                        <div class="analytics-bar-info">
+
+                            <span>
+                                High
+                            </span>
+
+                            <strong id="highPriority">
+                                0
+                            </strong>
+
+                        </div>
+
+                        <div class="analytics-bar-track">
+
+                            <div
+                                class="analytics-bar high"
+                                id="highBar"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- ==================================================
+             ACTIVITY
+             ================================================== -->
+
+        <section class="analytics-card analytics-activity-card">
+
+            <div class="analytics-card-header">
+
+                <div>
+
+                    <div class="analytics-eyebrow">
+                        ACTIVITY
+                    </div>
+
+                    <h2>
+                        Recent activity
+                    </h2>
+
+                    <p>
+                        Your latest task changes
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="activityList"
+                class="activity-list"
+            >
+
+                <div class="activity-empty">
+                    Loading activity...
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<script src="/static/analytics.js?v=analytics1"></script>
+
+</body>
+
+</html>

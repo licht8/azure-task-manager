@@ -42,6 +42,36 @@ def initialize_database():
             """
         )
 
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS activity (
+                id SERIAL PRIMARY KEY,
+
+                user_id INTEGER NOT NULL
+                REFERENCES users(id)
+                ON DELETE CASCADE,
+
+                task_id INTEGER NULL,
+
+                action TEXT NOT NULL,
+
+                description TEXT NOT NULL,
+
+                created_at TIMESTAMP NOT NULL
+            )
+            """
+        )
+
+        # Remove the old foreign key from activity.task_id.
+        # Activity records must keep the task ID even after
+        # the corresponding task has been deleted.
+        connection.execute(
+            """
+            ALTER TABLE activity
+            DROP CONSTRAINT IF EXISTS activity_task_id_fkey
+            """
+        )
+
         connection.commit()
 
     finally:
