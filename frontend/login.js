@@ -24,14 +24,12 @@ loginForm.addEventListener("submit", async (event) => {
     loginButton.textContent = "Signing in...";
     hideError();
 
-
     try {
 
         const formData = new URLSearchParams();
 
         formData.append("username", username);
         formData.append("password", password);
-
 
         const response = await fetch(
             `${API_URL}/auth/login`,
@@ -47,30 +45,32 @@ loginForm.addEventListener("submit", async (event) => {
             }
         );
 
+        let data;
 
-        const data = await response.json();
-
+        try {
+            data = await response.json();
+        } catch {
+            throw new Error("Server returned an invalid response.");
+        }
 
         if (!response.ok) {
 
             throw new Error(
                 data.detail ||
-                "Invalid username or password"
+                "Invalid username or password."
             );
         }
 
-
-        console.log("Login successful");
-
+        if (!data.access_token) {
+            throw new Error("Server did not return an access token.");
+        }
 
         localStorage.setItem(
             "access_token",
             data.access_token
         );
 
-
         window.location.href = "/";
-
 
     } catch (error) {
 
@@ -79,7 +79,7 @@ loginForm.addEventListener("submit", async (event) => {
         showError(error.message);
 
         loginButton.disabled = false;
-        loginButton.textContent = "Sign In";
+        loginButton.textContent = "Sign in";
     }
 
 });

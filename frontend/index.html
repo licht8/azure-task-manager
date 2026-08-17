@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -13,25 +14,42 @@
 
     <link
         rel="stylesheet"
-        href="/static/style.css?v=3"
+        href="/static/style.css?v=4"
     >
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="/static/logo.png"
+    >
+
 </head>
+
 
 <body>
 
 <div class="app-shell">
 
-    <!-- Sidebar -->
+
+    <!-- ========================================================
+         SIDEBAR
+         ======================================================== -->
 
     <aside class="sidebar">
 
+        <!-- Brand -->
+
         <div class="brand">
 
-            <div class="brand-icon">
-                ✓
+            <div class="brand-logo">
+                <img
+                    src="/static/logo.png"
+                    alt="Task Manager"
+                >
             </div>
 
-            <div>
+            <div class="brand-text">
+
                 <div class="brand-title">
                     Task Manager
                 </div>
@@ -39,10 +57,13 @@
                 <div class="brand-subtitle">
                     Your personal tasks
                 </div>
+
             </div>
 
         </div>
 
+
+        <!-- Navigation -->
 
         <nav class="sidebar-nav">
 
@@ -50,98 +71,134 @@
                 WORKSPACE
             </div>
 
+
             <a
-                href="#"
+                href="/"
                 class="nav-item active"
             >
-                <span class="nav-icon">▦</span>
-                Dashboard
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                <span>
+                    Dashboard
+                </span>
+
             </a>
-			
-			<a
-				href="/static/calendar.html"
-				class="nav-item"
-			>
-			<span class="nav-icon">◷</span>
-				Calendar
-			</a>
+
+
+            <a
+                href="/static/calendar.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◷
+                </span>
+
+                <span>
+                    Calendar
+                </span>
+
+            </a>
 
         </nav>
 
 
-		<div class="sidebar-profile">
+        <!-- User Profile -->
 
-			<div class="profile-user">
+        <div class="sidebar-profile">
 
-				<div
-					class="profile-avatar"
-					id="profileAvatar"
-				>
-					U
-				</div>
+            <div class="profile-user">
 
-				<div class="profile-info">
-
-					<div
-						class="profile-name"
-						id="profileName"
-					>
-						Loading...
-					</div>
-
-					<div class="profile-role">
-						User
-					</div>
-
-				</div>
-
-			</div>
+                <div
+                    class="profile-avatar"
+                    id="profileAvatar"
+                >
+                    U
+                </div>
 
 
-			<div class="profile-actions">
+                <div class="profile-info">
 
-				<button
-					type="button"
-					class="sidebar-user-action"
-					id="settingsButton"
-				>
-					<span>⚙</span>
-					Settings
-				</button>
+                    <div
+                        class="profile-name"
+                        id="profileName"
+                    >
+                        Loading...
+                    </div>
 
-				<button
-					type="button"
-					class="sidebar-user-action"
-					id="logoutButton"
-				>
-					<span>⇥</span>
-					Logout
-				</button>
+                    <div class="profile-role">
+                        User
+                    </div>
 
-			</div>
+                </div>
 
-		</div>
+            </div>
+
+
+            <div class="profile-actions">
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="settingsButton"
+                >
+
+                    <span>
+                        ⚙
+                    </span>
+
+                    Settings
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="logoutButton"
+                >
+
+                    <span>
+                        ⇥
+                    </span>
+
+                    Logout
+
+                </button>
+
+            </div>
+
+        </div>
 
     </aside>
 
 
-    <!-- Main -->
+
+    <!-- ========================================================
+         MAIN CONTENT
+         ======================================================== -->
 
     <main class="main-content">
 
-        <!-- Header -->
+
+        <!-- Topbar -->
 
         <header class="topbar">
 
-            <div>
+            <div class="topbar-heading">
 
                 <div class="breadcrumb">
                     Workspace / Dashboard
                 </div>
 
+
                 <h1>
                     My Tasks
                 </h1>
+
 
                 <p class="page-subtitle">
                     Manage your tasks and stay productive.
@@ -152,20 +209,34 @@
 
             <div class="topbar-actions">
 
+
                 <button
-                    id="logoutButton"
+                    id="topLogoutButton"
+                    type="button"
                     class="button logout-button"
                 >
-                    <span>↪</span>
+
+                    <span>
+                        ↪
+                    </span>
+
                     Logout
+
                 </button>
+
 
                 <button
                     id="newTaskButton"
+                    type="button"
                     class="button primary-button"
                 >
-                    <span>+</span>
+
+                    <span>
+                        +
+                    </span>
+
                     New Task
+
                 </button>
 
             </div>
@@ -173,9 +244,15 @@
         </header>
 
 
-        <!-- Statistics -->
+
+        <!-- ====================================================
+             STATISTICS
+             ==================================================== -->
 
         <section class="stats-grid">
+
+
+            <!-- Total -->
 
             <div class="stat-card">
 
@@ -201,6 +278,8 @@
             </div>
 
 
+            <!-- Pending -->
+
             <div class="stat-card">
 
                 <div class="stat-icon pending-icon">
@@ -225,6 +304,8 @@
             </div>
 
 
+            <!-- In progress -->
+
             <div class="stat-card">
 
                 <div class="stat-icon progress-icon">
@@ -248,6 +329,8 @@
 
             </div>
 
+
+            <!-- Completed -->
 
             <div class="stat-card">
 
@@ -275,9 +358,15 @@
         </section>
 
 
-        <!-- Tasks section -->
+
+        <!-- ====================================================
+             TASKS
+             ==================================================== -->
 
         <section class="tasks-section">
+
+
+            <!-- Section header -->
 
             <div class="section-header">
 
@@ -296,9 +385,13 @@
             </div>
 
 
+
             <!-- Filters -->
 
             <div class="filters">
+
+
+                <!-- Search -->
 
                 <div class="search-wrapper">
 
@@ -314,6 +407,8 @@
 
                 </div>
 
+
+                <!-- Status -->
 
                 <select id="statusFilter">
 
@@ -335,6 +430,8 @@
 
                 </select>
 
+
+                <!-- Priority -->
 
                 <select id="priorityFilter">
 
@@ -359,6 +456,7 @@
             </div>
 
 
+
             <!-- Task list -->
 
             <main
@@ -368,6 +466,7 @@
             </main>
 
 
+
             <!-- Empty state -->
 
             <div
@@ -375,23 +474,38 @@
                 class="empty-state hidden"
             >
 
-                <div class="empty-icon">
-                    ✓
+                <div class="empty-logo">
+
+                    <img
+                        src="/static/logo.png"
+                        alt=""
+                    >
+
                 </div>
+
 
                 <h3>
                     No tasks found
                 </h3>
 
+
                 <p>
                     Create your first task to get started.
                 </p>
 
+
                 <button
+                    type="button"
                     class="button primary-button"
                     onclick="openModal()"
                 >
-                    + Create Task
+
+                    <span>
+                        +
+                    </span>
+
+                    Create Task
+
                 </button>
 
             </div>
@@ -403,7 +517,10 @@
 </div>
 
 
-<!-- Task modal -->
+
+<!-- ============================================================
+     TASK MODAL
+     ============================================================ -->
 
 <div
     id="taskModal"
@@ -411,6 +528,9 @@
 >
 
     <div class="modal-content">
+
+
+        <!-- Modal header -->
 
         <div class="modal-header">
 
@@ -426,7 +546,9 @@
 
             </div>
 
+
             <button
+                type="button"
                 id="closeModal"
                 class="close-button"
             >
@@ -436,7 +558,13 @@
         </div>
 
 
+
+        <!-- Form -->
+
         <form id="taskForm">
+
+
+            <!-- Title -->
 
             <div class="form-group">
 
@@ -455,6 +583,9 @@
             </div>
 
 
+
+            <!-- Description -->
+
             <div class="form-group">
 
                 <label for="taskDescription">
@@ -470,7 +601,11 @@
             </div>
 
 
+
+            <!-- Status + Priority -->
+
             <div class="form-row">
+
 
                 <div class="form-group">
 
@@ -495,6 +630,7 @@
                     </select>
 
                 </div>
+
 
 
                 <div class="form-group">
@@ -527,6 +663,9 @@
             </div>
 
 
+
+            <!-- Due date -->
+
             <div class="form-group">
 
                 <label for="taskDueDate">
@@ -541,6 +680,9 @@
             </div>
 
 
+
+            <!-- Actions -->
+
             <div class="form-actions">
 
                 <button
@@ -550,6 +692,7 @@
                 >
                     Cancel
                 </button>
+
 
                 <button
                     type="submit"
@@ -567,7 +710,8 @@
 </div>
 
 
-<script src="/static/app.js?v=3"></script>
+
+<script src="/static/app.js?v=4"></script>
 
 </body>
 

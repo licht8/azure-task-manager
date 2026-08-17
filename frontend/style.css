@@ -3,44 +3,44 @@
 }
 
 :root {
-    --bg: #f6f6f5;
+    --bg: #faf8f6;
     --surface: #ffffff;
-    --surface-soft: #fafafa;
+    --surface-soft: #fcfaf8;
 
-    --text: #18181b;
-    --text-secondary: #71717a;
-    --text-muted: #a1a1aa;
+    --text: #292522;
+    --text-secondary: #78716c;
+    --text-muted: #a8a29e;
 
-    --border: #e4e4e7;
-    --border-dark: #d4d4d8;
+    --border: #e7e2de;
+    --border-dark: #d8d0ca;
 
-    --primary: #27272a;
-    --primary-dark: #18181b;
+    --primary: #d97745;
+    --primary-dark: #b85c32;
 
-    --sidebar: #18181b;
+    --sidebar: #292522;
 
-    --green: #52525b;
-    --green-bg: #f4f4f5;
+    --green: #6f9075;
+    --green-bg: #eaf2eb;
 
-    --yellow: #52525b;
-    --yellow-bg: #f4f4f5;
+    --yellow: #c4954a;
+    --yellow-bg: #f7f0e3;
 
-    --blue: #52525b;
-    --blue-bg: #f4f4f5;
+    --blue: #718ba3;
+    --blue-bg: #eaf0f5;
 
-    --red: #52525b;
-    --red-bg: #f4f4f5;
+    --red: #b86b67;
+    --red-bg: #f7eaea;
 
-    --gray-bg: #f4f4f5;
+    --gray-bg: #f5f2ef;
 
     --shadow-sm:
-        0 1px 2px rgba(0, 0, 0, 0.04);
+        0 1px 2px rgba(41, 37, 34, 0.04);
 
     --shadow:
-        0 4px 15px rgba(0, 0, 0, 0.05);
+        0 4px 15px rgba(41, 37, 34, 0.06);
 
     --shadow-lg:
-        0 20px 50px rgba(0, 0, 0, 0.12);
+        0 20px 50px rgba(41, 37, 34, 0.12);
 }
 
 
@@ -141,23 +141,40 @@ select:focus-visible {
 }
 
 
-.brand-icon {
-    width: 38px;
-    height: 38px;
+.brand-logo {
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
 
     display: flex;
 
     align-items: center;
     justify-content: center;
 
-    background: #3f3f46;
+    background: #ffffff;
 
-    border-radius: 10px;
+    border-radius: 11px;
 
-    font-weight: 700;
-    font-size: 20px;
+    overflow: hidden;
 
-    color: white;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+
+.brand-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+
+.brand-text {
+    min-width: 0;
 }
 
 
@@ -167,6 +184,8 @@ select:focus-visible {
     font-size: 16px;
 
     color: #ffffff;
+
+    white-space: nowrap;
 }
 
 
@@ -176,6 +195,8 @@ select:focus-visible {
     font-size: 11px;
 
     margin-top: 2px;
+
+    white-space: nowrap;
 }
 
 
@@ -229,16 +250,21 @@ select:focus-visible {
 
 
 .nav-item:hover {
-    background: #27272a;
-
+    background: #3a302b;
     color: #ffffff;
 }
 
+.nav-item:hover .nav-icon {
+    color: #d97745;
+}
 
 .nav-item.active {
-    background: #27272a;
-
+    background: #403832;
     color: #ffffff;
+}
+
+.nav-item.active .nav-icon {
+    color: #d97745;
 }
 
 
@@ -246,6 +272,8 @@ select:focus-visible {
     width: 20px;
 
     text-align: center;
+
+    flex-shrink: 0;
 }
 
 
@@ -254,7 +282,7 @@ select:focus-visible {
    ============================================================ */
 
 .sidebar-profile {
-    border-top: 1px solid #27272a;
+    border-top: 1px solid #4a403a;
 
     padding-top: 16px;
 
@@ -374,9 +402,13 @@ select:focus-visible {
 
 
 .sidebar-user-action:hover {
-    background: #27272a;
-
+    background: #3a302b;
     color: #ffffff;
+
+}
+
+.sidebar-user-action:hover span {
+    color: #d97745;
 }
 
 
@@ -387,6 +419,7 @@ select:focus-visible {
 
     font-size: 15px;
 }
+
 
 /* ============================================================
    Main
@@ -411,6 +444,11 @@ select:focus-visible {
     align-items: flex-start;
 
     margin-bottom: 32px;
+}
+
+
+.topbar-heading {
+    min-width: 0;
 }
 
 
@@ -488,31 +526,32 @@ select:focus-visible {
 
 
 .primary-button {
-    background: #27272a;
+    background: #d97745;
 
-    color: white;
+    color: #ffffff;
 
     box-shadow:
-        0 3px 8px rgba(0, 0, 0, 0.12);
+        0 3px 8px rgba(217, 119, 69, 0.20);
 }
 
-
 .primary-button:hover {
-    background: #18181b;
+    background: #b85c32;
 }
 
 
 .logout-button {
-    background: white;
+    background: #ffffff;
 
-    color: #52525b;
+    color: #92400e;
 
-    border: 1px solid var(--border);
+    border: 1px solid #fed7aa;
 }
 
 
 .logout-button:hover {
-    background: #f4f4f5;
+    background: #fff7ed;
+
+    border-color: #fdba74;
 }
 
 
@@ -578,23 +617,23 @@ select:focus-visible {
 
 
 .pending-icon {
-    background: #f4f4f5;
+    background: #fef3c7;
 
-    color: #52525b;
+    color: #b45309;
 }
 
 
 .progress-icon {
-    background: #eeeeef;
+    background: #fed7aa;
 
-    color: #3f3f46;
+    color: #c2410c;
 }
 
 
 .completed-icon {
-    background: #e4e4e7;
+    background: #ecfccb;
 
-    color: #27272a;
+    color: #4d7c0f;
 }
 
 
@@ -834,7 +873,9 @@ select:focus-visible {
 }
 
 
-/* Status */
+/* ============================================================
+   Status
+   ============================================================ */
 
 .status-pending {
     background: #f4f4f5;
@@ -863,7 +904,9 @@ select:focus-visible {
 }
 
 
-/* Priority */
+/* ============================================================
+   Priority
+   ============================================================ */
 
 .priority-low {
     background: #fafafa;
@@ -962,29 +1005,37 @@ select:focus-visible {
 }
 
 
-.empty-icon {
-    width: 52px;
-    height: 52px;
+.empty-logo {
+    width: 58px;
+    height: 58px;
 
-    margin: 0 auto 15px;
+    margin: 0 auto 16px;
 
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
-    background: #f4f4f5;
+    background: #ffffff;
 
-    color: #27272a;
+    border: 1px solid var(--border);
 
-    border: 1px solid #e4e4e7;
+    border-radius: 15px;
 
-    border-radius: 50%;
+    overflow: hidden;
 
-    font-weight: 700;
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.06);
+}
 
-    font-size: 20px;
+
+.empty-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
 }
 
 
@@ -1288,16 +1339,24 @@ select:focus-visible {
 
     border-radius: 16px;
 
-    background: #27272a;
+    background: #ffffff;
 
-    color: white;
+    border: 1px solid #e4e4e7;
 
-    font-size: 30px;
-
-    font-weight: bold;
+    overflow: hidden;
 
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.12);
+        0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+.auth-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
 }
 
 
@@ -1383,9 +1442,9 @@ select:focus-visible {
 
     border-radius: 9px;
 
-    background: #27272a;
+    background: #d97745;
 
-    color: white;
+    color: ffffff;
 
     font-weight: 600;
 
@@ -1400,7 +1459,7 @@ select:focus-visible {
 
 
 .auth-button:hover {
-    background: #18181b;
+    background: #b85c32;
 }
 
 
@@ -1445,136 +1504,27 @@ select:focus-visible {
 
 
 /* ============================================================
-   Responsive
-   ============================================================ */
-
-@media (max-width: 1000px) {
-
-    .sidebar {
-        width: 210px;
-    }
-
-    .main-content {
-        margin-left: 210px;
-
-        width: calc(100% - 210px);
-
-        padding: 28px;
-    }
-
-    .stats-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-}
-
-
-@media (max-width: 760px) {
-
-    .sidebar {
-        display: none;
-    }
-
-    .main-content {
-        margin-left: 0;
-
-        width: 100%;
-
-        padding: 22px 16px;
-    }
-
-    .topbar {
-        flex-direction: column;
-
-        gap: 20px;
-    }
-
-    .topbar-actions {
-        width: 100%;
-    }
-
-    .topbar-actions button {
-        flex: 1;
-    }
-
-    .filters {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-@media (max-width: 520px) {
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .tasks-section {
-        border-radius: 10px;
-    }
-
-    .section-header {
-        padding-left: 17px;
-
-        padding-right: 17px;
-    }
-
-    .filters {
-        padding-left: 17px;
-
-        padding-right: 17px;
-    }
-
-    .task-list {
-        padding-left: 17px;
-
-        padding-right: 17px;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-content {
-        padding: 20px;
-    }
-}
-
-
-@media (max-width: 480px) {
-
-    .auth-card {
-        padding: 30px 22px;
-
-        border-radius: 14px;
-    }
-
-    .auth-card h1 {
-        font-size: 24px;
-    }
-}
-
-
-/* ============================================================
-   CALENDAR
+   Calendar
    ============================================================ */
 
 .calendar-section {
     background: var(--surface);
+
     border: 1px solid var(--border);
+
     border-radius: 14px;
+
     box-shadow: var(--shadow-sm);
+
     overflow: hidden;
 }
 
 
-/* ------------------------------------------------------------
-   Header
-   ------------------------------------------------------------ */
-
 .calendar-header {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     padding: 16px 20px;
@@ -1582,28 +1532,36 @@ select:focus-visible {
     border-bottom: 1px solid var(--border);
 }
 
+
 .calendar-title {
     display: flex;
+
     align-items: center;
+
     gap: 9px;
 }
+
 
 .calendar-title h2 {
     margin: 0;
 
     font-size: 17px;
+
     font-weight: 650;
+
     letter-spacing: -0.01em;
 }
 
+
 .calendar-title span {
     color: var(--text-secondary);
+
     font-size: 12px;
 }
 
 
 /* ============================================================
-   CALENDAR NAVIGATION
+   Calendar navigation
    ============================================================ */
 
 .calendar-nav-button {
@@ -1611,20 +1569,24 @@ select:focus-visible {
     height: 38px;
 
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
 
     padding: 0;
 
     border: 1px solid var(--border);
+
     border-radius: 8px;
 
     background: var(--surface);
+
     color: var(--text-secondary);
 
     cursor: pointer;
 
     font-size: 18px;
+
     font-weight: 600;
 
     transition:
@@ -1633,6 +1595,7 @@ select:focus-visible {
         color 0.15s,
         transform 0.15s;
 }
+
 
 .calendar-nav-button:hover {
     background: var(--gray-bg);
@@ -1644,14 +1607,58 @@ select:focus-visible {
     transform: translateY(-1px);
 }
 
+
 .calendar-nav-button:active {
     transform: translateY(0);
 }
 
 
-/* ------------------------------------------------------------
+/* ============================================================
+   Calendar weekdays
+   ============================================================ */
+
+.calendar-weekdays {
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, minmax(0, 1fr));
+
+    gap: 5px;
+
+    padding: 14px 16px 4px;
+}
+
+
+.calendar-weekdays > div {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    min-width: 0;
+
+    height: 26px;
+
+    padding-left: 6px;
+
+    color: var(--text-muted);
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    text-align: left;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
    Calendar grid
-   ------------------------------------------------------------ */
+   ============================================================ */
 
 .calendar-grid {
     display: grid;
@@ -1661,69 +1668,19 @@ select:focus-visible {
 
     gap: 5px;
 
-    padding: 14px 16px 16px;
-}
-
-
-/* ============================================================
-   CALENDAR WEEKDAYS
-   ============================================================ */
-
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-
-    gap: 5px;
-
-    padding: 14px 16px 4px;
-}
-
-.calendar-weekdays > div {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-
-    min-width: 0;
-    height: 26px;
-
-    padding-left: 6px;
-
-    color: var(--text-muted);
-
-    font-size: 12px;
-    font-weight: 700;
-
-    letter-spacing: 0.04em;
-
-    text-align: left;
-    white-space: nowrap;
-}
-
-
-/* ============================================================
-   CALENDAR DAYS
-   ============================================================ */
-
-.calendar-grid {
-    display: grid;
-
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-
-    gap: 5px;
-
     padding: 4px 16px 16px;
 }
 
 
-/* Individual day */
-
 .calendar-day {
     min-width: 0;
+
     min-height: 70px;
 
     padding: 6px;
 
     border: 1px solid #eeeeee;
+
     border-radius: 8px;
 
     background: var(--surface-soft);
@@ -1736,23 +1693,26 @@ select:focus-visible {
         box-shadow 0.15s;
 }
 
+
 .calendar-day:hover {
     background: #ffffff;
 
     border-color: #e2e2e2;
 
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 
 /* ============================================================
-   CALENDAR TASKS
+   Calendar tasks
    ============================================================ */
 
 .calendar-task {
     width: 100%;
 
     display: flex;
+
     flex-direction: column;
 
     align-items: flex-start;
@@ -1764,9 +1724,11 @@ select:focus-visible {
     padding: 6px 7px;
 
     border: 1px solid transparent;
+
     border-radius: 6px;
 
     background: #f3f4f6;
+
     color: var(--text);
 
     cursor: pointer;
@@ -1774,6 +1736,7 @@ select:focus-visible {
     text-align: left;
 
     font-size: 10px;
+
     line-height: 1.25;
 
     overflow: hidden;
@@ -1784,14 +1747,11 @@ select:focus-visible {
         transform 0.15s;
 }
 
+
 .calendar-task:hover {
     transform: translateY(-1px);
 }
 
-
-/* ============================================================
-   Task title
-   ============================================================ */
 
 .calendar-task-title {
     width: 100%;
@@ -1803,13 +1763,10 @@ select:focus-visible {
     text-overflow: ellipsis;
 
     font-size: 10px;
+
     font-weight: 700;
 }
 
-
-/* ============================================================
-   Task time
-   ============================================================ */
 
 .calendar-task-time {
     color: inherit;
@@ -1817,13 +1774,10 @@ select:focus-visible {
     opacity: 0.65;
 
     font-size: 9px;
+
     font-weight: 500;
 }
 
-
-/* ============================================================
-   Pending
-   ============================================================ */
 
 .calendar-task-pending {
     background: var(--yellow-bg);
@@ -1833,16 +1787,13 @@ select:focus-visible {
     color: #92400e;
 }
 
+
 .calendar-task-pending:hover {
     background: #fef3c7;
 
     border-color: #fcd34d;
 }
 
-
-/* ============================================================
-   In Progress
-   ============================================================ */
 
 .calendar-task-in_progress {
     background: var(--blue-bg);
@@ -1852,16 +1803,13 @@ select:focus-visible {
     color: #1e40af;
 }
 
+
 .calendar-task-in_progress:hover {
     background: #dbeafe;
 
     border-color: #93c5fd;
 }
 
-
-/* ============================================================
-   Completed
-   ============================================================ */
 
 .calendar-task-completed {
     background: var(--green-bg);
@@ -1870,6 +1818,7 @@ select:focus-visible {
 
     color: #166534;
 }
+
 
 .calendar-task-completed:hover {
     background: #dcfce7;
@@ -1886,14 +1835,14 @@ select:focus-visible {
     opacity: 0.45;
 }
 
+
 .calendar-day.outside-month .calendar-task {
     opacity: 0.7;
 }
 
 
-
 /* ============================================================
-   CALENDAR LEGEND
+   Calendar legend
    ============================================================ */
 
 .calendar-legend {
@@ -1912,6 +1861,7 @@ select:focus-visible {
     font-size: 11px;
 }
 
+
 .calendar-legend-item {
     display: inline-flex;
 
@@ -1922,8 +1872,6 @@ select:focus-visible {
     white-space: nowrap;
 }
 
-
-/* Status dots */
 
 .calendar-legend-dot {
     width: 8px;
@@ -1936,13 +1884,16 @@ select:focus-visible {
     display: inline-block;
 }
 
+
 .calendar-legend-dot.pending {
     background-color: #f59e0b !important;
 }
 
+
 .calendar-legend-dot.progress {
     background-color: #3b82f6 !important;
 }
+
 
 .calendar-legend-dot.completed {
     background-color: #22c55e !important;
@@ -1950,216 +1901,7 @@ select:focus-visible {
 
 
 /* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 760px) {
-
-    .calendar-grid {
-        gap: 3px;
-        padding: 10px;
-    }
-
-    .calendar-day {
-        min-height: 62px;
-        padding: 5px;
-    }
-
-    .calendar-task {
-        font-size: 8px;
-        padding: 3px 4px;
-    }
-
-}
-
-
-@media (max-width: 520px) {
-
-    .calendar-header {
-        padding: 14px;
-    }
-
-    .calendar-grid {
-        gap: 2px;
-        padding: 8px;
-    }
-
-    .calendar-weekday {
-        font-size: 9px;
-    }
-
-    .calendar-day {
-        min-height: 52px;
-        padding: 4px;
-    }
-
-    .calendar-day-number {
-        width: 20px;
-        height: 20px;
-
-        font-size: 10px;
-    }
-
-    .calendar-task {
-        display: none;
-    }
-
-    .calendar-legend {
-        justify-content: center;
-
-        gap: 10px;
-
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-}
-
-
-
-
-
-
-
-/* ============================================================
-   USER PROFILE
-   ============================================================ */
-
-.sidebar-profile {
-    border-top: 1px solid #e5e7eb;
-
-    padding-top: 16px;
-
-    margin-top: auto;
-}
-
-
-.profile-user {
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    padding: 0 6px 14px;
-}
-
-
-.profile-avatar {
-    width: 36px;
-    height: 36px;
-
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 9px;
-
-    background: #f3f4f6;
-
-    color: #374151;
-
-    font-size: 14px;
-    font-weight: 700;
-}
-
-
-.profile-info {
-    min-width: 0;
-}
-
-
-.profile-name {
-    color: #f9fafb;
-
-    font-size: 13px;
-    font-weight: 700;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
-}
-
-
-.profile-role {
-    margin-top: 2px;
-
-    color: #9ca3af;
-
-    font-size: 10px;
-}
-
-
-.profile-actions {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-
-.profile-action {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    padding: 8px;
-
-    border: none;
-
-    border-radius: 7px;
-
-    background: transparent;
-
-    color: #6b7280;
-
-    cursor: pointer;
-
-    text-align: left;
-
-    font-size: 12px;
-    font-weight: 500;
-
-    transition:
-        background 0.15s,
-        color 0.15s;
-}
-
-
-.profile-action span {
-    width: 18px;
-
-    text-align: center;
-
-    font-size: 14px;
-}
-
-
-.profile-action:hover {
-    background: #f3f4f6;
-
-    color: #111827;
-}
-
-
-.profile-action.logout:hover {
-    background: #fef2f2;
-
-    color: #dc2626;
-}
-
-
-
-/* ============================================================
-   SETTINGS
+   Settings
    ============================================================ */
 
 .settings-section {
@@ -2237,6 +1979,7 @@ select:focus-visible {
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     border-radius: 14px;
@@ -2295,7 +2038,7 @@ select:focus-visible {
 
 
 /* ============================================================
-   Settings Card
+   Settings card
    ============================================================ */
 
 .settings-card {
@@ -2389,7 +2132,7 @@ select:focus-visible {
 
 
 /* ============================================================
-   Messages
+   Settings messages
    ============================================================ */
 
 .settings-message {
@@ -2427,12 +2170,89 @@ select:focus-visible {
    Responsive
    ============================================================ */
 
+@media (max-width: 1000px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .main-content {
+        margin-left: 210px;
+
+        width: calc(100% - 210px);
+
+        padding: 28px;
+    }
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
 @media (max-width: 800px) {
 
     .settings-user-details {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns:
+            1fr 1fr;
 
         gap: 18px;
+    }
+
+}
+
+
+@media (max-width: 760px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 0;
+
+        width: 100%;
+
+        padding: 22px 16px;
+    }
+
+    .topbar {
+        flex-direction: column;
+
+        gap: 20px;
+    }
+
+    .topbar-actions {
+        width: 100%;
+    }
+
+    .topbar-actions button {
+        flex: 1;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+
+
+    .calendar-grid {
+        gap: 3px;
+
+        padding: 10px;
+    }
+
+    .calendar-day {
+        min-height: 62px;
+
+        padding: 5px;
+    }
+
+    .calendar-task {
+        font-size: 8px;
+
+        padding: 3px 4px;
     }
 
 }
@@ -2446,25 +2266,119 @@ select:focus-visible {
         flex-direction: column;
     }
 
-
     .settings-user-details {
         grid-template-columns: 1fr;
 
         gap: 14px;
     }
 
-
     .settings-card {
         padding: 20px;
     }
-
 
     .settings-form-actions {
         justify-content: stretch;
     }
 
-
     .settings-form-actions button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tasks-section {
+        border-radius: 10px;
+    }
+
+    .section-header {
+        padding-left: 17px;
+
+        padding-right: 17px;
+    }
+
+    .filters {
+        padding-left: 17px;
+
+        padding-right: 17px;
+    }
+
+    .task-list {
+        padding-left: 17px;
+
+        padding-right: 17px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+
+    .calendar-header {
+        padding: 14px;
+    }
+
+    .calendar-grid {
+        gap: 2px;
+
+        padding: 8px;
+    }
+
+    .calendar-weekdays > div {
+        font-size: 9px;
+    }
+
+    .calendar-day {
+        min-height: 52px;
+
+        padding: 4px;
+    }
+
+    .calendar-task {
+        display: none;
+    }
+
+    .calendar-legend {
+        justify-content: center;
+
+        gap: 10px;
+
+        padding-left: 10px;
+
+        padding-right: 10px;
+    }
+
+
+    .auth-card {
+        padding: 30px 22px;
+
+        border-radius: 14px;
+    }
+
+    .auth-card h1 {
+        font-size: 24px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .topbar-actions {
+        flex-direction: column;
+    }
+
+    .topbar-actions button {
         width: 100%;
     }
 
