@@ -820,9 +820,9 @@ select:focus-visible {
 .task-title {
     margin: 0;
 
-    font-size: 15px;
+    font-size: 17px;
 
-    font-weight: 650;
+    font-weight: 600;
 
     color: var(--text);
 
@@ -835,7 +835,7 @@ select:focus-visible {
 
     color: var(--text-secondary);
 
-    font-size: 13px;
+    font-size: 14px;
 
     line-height: 1.55;
 
@@ -849,6 +849,8 @@ select:focus-visible {
     flex-wrap: wrap;
 
     gap: 7px;
+	
+	font-size: 13px;
 
     margin-top: 13px;
 }
@@ -863,9 +865,9 @@ select:focus-visible {
 
     border-radius: 6px;
 
-    font-size: 10px;
+    font-size: 13px;
 
-    font-weight: 700;
+    font-weight: 600;
 
     letter-spacing: 0.01em;
 
@@ -959,7 +961,7 @@ select:focus-visible {
 
     cursor: pointer;
 
-    font-size: 11px;
+    font-size: 12px;
 
     font-weight: 600;
 
