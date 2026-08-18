@@ -57,6 +57,7 @@ def create_user(user: UserCreate):
                 %s,
                 %s,
                 %s,
+                %s,
                 %s
             )
             RETURNING id
