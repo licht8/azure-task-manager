@@ -31,13 +31,24 @@ The deployment script supports both:
 
 The application provides REST endpoints for managing tasks.
 
-Supported operations include:
+Supported operations include: create a task, retrieve tasks, retrieve a specific task, update a task, delete a task
 
-- create a task
-- retrieve tasks
-- retrieve a specific task
-- update a task
-- delete a task
+---
+
+### Authentication
+
+The application includes user authentication and account management.
+Authentication is implemented using JWT tokens and password hashing.
+The JWT secret is provided through the JWT_SECRET_KEY environment variable and is not stored in the source code.
+
+Supported functionality includes: user registration, user login, authenticated API requests, current user information, logout, password change, protected endpoints using JWT authentication
+
+---
+
+### Dashboard
+
+The application provides a web dashboard for managing tasks.
+The dashboard includes: task creation, task editing, task deletion, task status management, task priority management, due dates, task search, task filtering, task statistics, recent activity
 
 ### Health Monitoring
 
