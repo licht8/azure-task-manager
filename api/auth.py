@@ -6,13 +6,15 @@ from schemas.auth_schema import (
     UserResponse,
     UserLogin,
     TokenResponse,
-    ChangePasswordRequest
+    ChangePasswordRequest,
+    UpdateProfileRequest
 )
 
 from services.auth_service import (
     create_user,
     authenticate_user,
-    change_password
+    change_password,
+    update_profile
 )
 
 from core.security import (
@@ -115,3 +117,28 @@ def change_user_password(
     return {
         "message": "Password changed successfully"
     }
+    
+    
+@router.put(
+    "/auth/profile",
+    response_model=UserResponse,
+    tags=["Authentication"],
+    summary="Update Profile"
+)
+def update_user_profile(
+    profile_data: UpdateProfileRequest,
+    current_user: dict = Depends(get_current_user)
+):
+
+    updated_user = update_profile(
+        current_user["id"],
+        profile_data
+    )
+
+    if updated_user is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Username already exists or user was not found"
+        )
+
+    return updated_user

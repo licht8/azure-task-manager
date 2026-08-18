@@ -563,9 +563,8 @@ async function loadProfile() {
 
 
         const avatar =
-            username
-                .charAt(0)
-                .toUpperCase();
+            user.avatar ||
+            "avatar-01";
 
 
         const profileName =
@@ -580,6 +579,10 @@ async function loadProfile() {
             );
 
 
+        // ====================================================
+        // Username
+        // ====================================================
+
         if (profileName) {
 
             profileName.textContent =
@@ -588,12 +591,49 @@ async function loadProfile() {
         }
 
 
+        // ====================================================
+        // Avatar
+        // ====================================================
+
         if (profileAvatar) {
 
-            profileAvatar.textContent =
-                avatar;
+            profileAvatar.innerHTML =
+                "";
+
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+
+            image.src =
+                `/static/avatars/${avatar}.png`;
+
+
+            image.alt =
+                "Profile avatar";
+
+
+            image.className =
+                "avatar-image";
+
+
+            image.onerror =
+                () => {
+
+                    profileAvatar.innerHTML =
+                        "<span>U</span>";
+
+                };
+
+
+            profileAvatar.appendChild(
+                image
+            );
 
         }
+
 
     } catch (error) {
 

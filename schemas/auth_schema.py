@@ -42,6 +42,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    avatar: str
     created_at: datetime
 
 
@@ -64,4 +65,19 @@ class ChangePasswordRequest(BaseModel):
         min_length=8,
         max_length=128,
         description="New password"
+    )
+    
+    
+class UpdateProfileRequest(BaseModel):
+    username: str = Field(
+        ...,
+        min_length=3,
+        max_length=50,
+        description="Username"
+    )
+
+    avatar: str = Field(
+        ...,
+        pattern=r"^avatar-(0[1-9]|10)$",
+        description="Selected avatar"
     )

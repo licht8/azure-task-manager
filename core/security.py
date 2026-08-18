@@ -137,6 +137,7 @@ def get_current_user(
                 id,
                 username,
                 email,
+                avatar,
                 created_at
             FROM users
             WHERE id = %s

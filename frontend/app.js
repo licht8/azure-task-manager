@@ -175,6 +175,61 @@ logoutButton.addEventListener(
 );
 
 
+// ============================================================
+// Sidebar Avatar
+// ============================================================
+
+function getAvatarUrl(avatar) {
+
+    return `/static/avatars/${avatar}.png`;
+
+}
+
+
+function setSidebarAvatar(avatar) {
+
+    if (!profileAvatar) {
+        return;
+    }
+
+
+    profileAvatar.innerHTML = "";
+
+
+    const image =
+        document.createElement("img");
+
+
+    image.src =
+        getAvatarUrl(
+            avatar || "avatar-01"
+        );
+
+
+    image.alt =
+        "Profile avatar";
+
+
+    image.className =
+        "avatar-image";
+
+
+    image.onerror =
+        () => {
+
+            profileAvatar.innerHTML =
+                "<span>U</span>";
+
+        };
+
+
+    profileAvatar.appendChild(
+        image
+    );
+
+}
+
+
 async function loadCurrentUser() {
 
     try {
@@ -202,18 +257,17 @@ async function loadCurrentUser() {
             await response.json();
 
 
-        const username =
-            user.username || "User";
+		const username =
+			user.username || "User";
 
 
-        profileName.textContent =
-            username;
+		profileName.textContent =
+			username;
+	
 
-
-        profileAvatar.textContent =
-            username
-                .charAt(0)
-                .toUpperCase();
+		setSidebarAvatar(
+			user.avatar || "avatar-01"
+		);
 
 
     } catch (error) {

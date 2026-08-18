@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Task Manager — Profile</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css?v=profile2"
+    >
+
+</head>
+
+
+<body>
+
+<div class="app-shell">
+
+    <!-- ======================================================
+         Sidebar
+         ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+
+                <img
+                    src="/static/logo.png"
+                    alt="Task Manager"
+                >
+
+            </div>
+
+            <div>
+
+                <div class="brand-title">
+                    Task Manager
+                </div>
+
+                <div class="brand-subtitle">
+                    Docker Azure Demo
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-title">
+                WORKSPACE
+            </div>
+
+
+            <a
+                href="/"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▣
+                </span>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="/static/calendar.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                Calendar
+
+            </a>
+
+
+            <a
+                href="/static/analytics.html"
+                class="nav-item"
+            >
+
+                <span class="nav-icon">
+                    ◈
+                </span>
+
+                Analytics
+
+            </a>
+
+        </nav>
+
+
+        <!-- ==================================================
+             User Profile
+             ================================================== -->
+
+        <div class="sidebar-profile">
+
+            <div class="profile-user">
+
+                <div
+                    class="profile-avatar"
+                    id="profileAvatar"
+                >
+
+                    <span>U</span>
+
+                </div>
+
+                <div class="profile-info">
+
+                    <div
+                        class="profile-name"
+                        id="profileName"
+                    >
+                        Loading...
+                    </div>
+
+                    <div class="profile-role">
+                        User
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-actions">
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="profileButton"
+                >
+
+                    <span>◉</span>
+
+                    Profile
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="settingsButton"
+                >
+
+                    <span>⚙</span>
+
+                    Settings
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="sidebar-user-action"
+                    id="logoutButton"
+                >
+
+                    <span>⇥</span>
+
+                    Logout
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ======================================================
+         Main Content
+         ====================================================== -->
+
+    <main class="main-content">
+
+
+        <div class="topbar">
+
+            <div>
+
+                <div class="breadcrumb">
+                    Profile
+                </div>
+
+                <h1>
+                    Profile
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage your account information
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             Profile
+             ================================================== -->
+
+        <section class="settings-section">
+
+            <div class="settings-section-header">
+
+                <div>
+
+                    <div class="settings-eyebrow">
+                        ACCOUNT
+                    </div>
+
+                    <h2>
+                        Your profile
+                    </h2>
+
+                    <p>
+                        Update your username and profile avatar
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-page-card">
+
+
+                <!-- ==================================================
+                     Avatar
+                     ================================================== -->
+
+                <div class="profile-page-avatar-section">
+
+                    <div
+                        class="profile-page-avatar"
+                        id="currentAvatar"
+                    >
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="button profile-avatar-button"
+                        id="changeAvatarButton"
+                    >
+
+                        Change avatar
+
+                    </button>
+
+
+                    <p class="profile-avatar-hint">
+                        Choose one of the available avatars
+                    </p>
+
+                </div>
+
+
+                <!-- ==================================================
+                     Profile Form
+                     ================================================== -->
+
+                <div class="profile-page-form-section">
+
+
+                    <div
+                        id="profileSuccess"
+                        class="settings-message settings-success hidden"
+                    >
+                    </div>
+
+
+                    <div
+                        id="profileError"
+                        class="settings-message settings-error hidden"
+                    >
+                    </div>
+
+
+                    <form id="profileForm">
+
+
+                        <div class="settings-form-group">
+
+                            <label for="usernameInput">
+                                Username
+                            </label>
+
+                            <input
+                                type="text"
+                                id="usernameInput"
+                                minlength="3"
+                                maxlength="50"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="settings-form-group">
+
+                            <label for="profileEmail">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="profileEmail"
+                                readonly
+                            >
+
+                            <span class="profile-field-hint">
+                                Email address cannot be changed here.
+                            </span>
+
+                        </div>
+
+
+                        <div class="settings-form-group">
+
+                            <label for="profileAvatarValue">
+                                Selected avatar
+                            </label>
+
+                            <input
+                                type="text"
+                                id="profileAvatarValue"
+                                readonly
+                            >
+
+                        </div>
+
+
+                        <div class="settings-form-actions">
+
+                            <button
+                                type="submit"
+                                class="button primary-button"
+                                id="saveProfileButton"
+                            >
+                                Save changes
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<!-- ============================================================
+     Avatar Modal
+     ============================================================ -->
+
+<div
+    class="modal hidden"
+    id="avatarModal"
+>
+
+    <div class="modal-content profile-avatar-modal">
+
+
+        <div class="modal-header">
+
+            <div>
+
+                <div class="modal-eyebrow">
+                    PROFILE
+                </div>
+
+                <h2>
+                    Choose your avatar
+                </h2>
+
+                <p class="avatar-modal-description">
+                    Select an avatar for your profile
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="close-button"
+                id="closeAvatarModal"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             Avatar Grid
+             ================================================== -->
+
+        <div
+            class="avatar-grid"
+            id="avatarGrid"
+        >
+
+            <!-- Generated by profile.js -->
+
+        </div>
+
+
+        <!-- ==================================================
+             Modal Actions
+             ================================================== -->
+
+        <div class="form-actions">
+
+            <button
+                type="button"
+                class="button cancel-button"
+                id="cancelAvatarButton"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                class="button primary-button"
+                id="selectAvatarButton"
+            >
+                Select avatar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="/static/profile.js?v=profile2"></script>
+
+</body>
+
+</html>

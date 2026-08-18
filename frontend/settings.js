@@ -183,40 +183,136 @@ async function loadCurrentUser() {
             user.role || "User";
 
 
-        /*
-         * Sidebar
-         */
-
-        profileName.textContent =
-            username;
+        const avatar =
+            user.avatar || "avatar-01";
 
 
-        profileAvatar.textContent =
-            username
-                .charAt(0)
-                .toUpperCase();
+        // ====================================================
+        // Sidebar username
+        // ====================================================
+
+        if (profileName) {
+
+            profileName.textContent =
+                username;
+
+        }
 
 
-        /*
-         * Settings
-         */
+        // ====================================================
+        // Sidebar avatar
+        // ====================================================
 
-        settingsUsername.textContent =
-            username;
+        if (profileAvatar) {
 
-
-        settingsEmail.textContent =
-            email;
+            profileAvatar.innerHTML =
+                "";
 
 
-        settingsRole.textContent =
-            role;
+            const image =
+                document.createElement(
+                    "img"
+                );
 
 
-        settingsAvatar.textContent =
-            username
-                .charAt(0)
-                .toUpperCase();
+            image.src =
+                `/static/avatars/${avatar}.png`;
+
+
+            image.alt =
+                "Profile avatar";
+
+
+            image.className =
+                "avatar-image";
+
+
+            image.onerror =
+                () => {
+
+                    profileAvatar.innerHTML =
+                        "<span>U</span>";
+
+                };
+
+
+            profileAvatar.appendChild(
+                image
+            );
+
+        }
+
+
+        // ====================================================
+        // Settings information
+        // ====================================================
+
+        if (settingsUsername) {
+
+            settingsUsername.textContent =
+                username;
+
+        }
+
+
+        if (settingsEmail) {
+
+            settingsEmail.textContent =
+                email;
+
+        }
+
+
+        if (settingsRole) {
+
+            settingsRole.textContent =
+                role;
+
+        }
+
+
+        // ====================================================
+        // Large Settings avatar
+        // ====================================================
+
+        if (settingsAvatar) {
+
+            settingsAvatar.innerHTML =
+                "";
+
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+
+            image.src =
+                `/static/avatars/${avatar}.png`;
+
+
+            image.alt =
+                "Profile avatar";
+
+
+            image.className =
+                "avatar-image";
+
+
+            image.onerror =
+                () => {
+
+                    settingsAvatar.innerHTML =
+                        "<span>U</span>";
+
+                };
+
+
+            settingsAvatar.appendChild(
+                image
+            );
+
+        }
 
 
     } catch (error) {
@@ -227,12 +323,20 @@ async function loadCurrentUser() {
         );
 
 
-        profileName.textContent =
-            "User";
+        if (profileName) {
+
+            profileName.textContent =
+                "User";
+
+        }
 
 
-        settingsUsername.textContent =
-            "User";
+        if (settingsUsername) {
+
+            settingsUsername.textContent =
+                "User";
+
+        }
 
     }
 

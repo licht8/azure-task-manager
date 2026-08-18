@@ -151,14 +151,49 @@ async function loadCurrentUser() {
             user.username || "User";
 
 
+        /*
+         * Username
+         */
+
         profileName.textContent =
             username;
 
 
-        profileAvatar.textContent =
-            username
-                .charAt(0)
-                .toUpperCase();
+        /*
+         * Avatar
+         */
+
+        profileAvatar.innerHTML = "";
+
+
+        const image =
+            document.createElement("img");
+
+
+        image.src =
+            `/static/avatars/${user.avatar || "avatar-01"}.png`;
+
+
+        image.alt =
+            "Profile avatar";
+
+
+        image.className =
+            "avatar-image";
+
+
+        image.onerror =
+            () => {
+
+                profileAvatar.innerHTML =
+                    "<span>U</span>";
+
+            };
+
+
+        profileAvatar.appendChild(
+            image
+        );
 
 
     } catch (error) {
@@ -168,7 +203,16 @@ async function loadCurrentUser() {
             error
         );
 
+
+        profileName.textContent =
+            "User";
+
+
+        profileAvatar.innerHTML =
+            "<span>U</span>";
+
     }
+
 }
 
 settingsButton.addEventListener(

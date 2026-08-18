@@ -7,7 +7,10 @@ from core.security import (
     verify_password
 )
 
-from schemas.auth_schema import UserCreate
+from schemas.auth_schema import (
+    UserCreate,
+    UpdateProfileRequest
+)
 
 
 def create_user(user: UserCreate):
@@ -47,6 +50,7 @@ def create_user(user: UserCreate):
                 username,
                 email,
                 password_hash,
+                avatar,
                 created_at
             )
             VALUES (
@@ -61,6 +65,7 @@ def create_user(user: UserCreate):
                 user.username,
                 user.email,
                 password_hash,
+                "avatar-01",
                 created_at
             )
         )
@@ -73,6 +78,7 @@ def create_user(user: UserCreate):
             "id": user_id,
             "username": user.username,
             "email": user.email,
+            "avatar": "avatar-01",
             "created_at": created_at
         }
 
@@ -97,6 +103,7 @@ def authenticate_user(
                 username,
                 email,
                 password_hash,
+                avatar,
                 created_at
             FROM users
             WHERE username = %s
@@ -132,6 +139,7 @@ def get_user_by_id(user_id: int):
                 id,
                 username,
                 email,
+                avatar,
                 created_at
             FROM users
             WHERE id = %s
@@ -146,6 +154,60 @@ def get_user_by_id(user_id: int):
 
     finally:
 
+        connection.close()
+        
+        
+def update_user_profile(
+    user_id: int,
+    username: str,
+    email: str,
+    avatar: str
+):
+    connection = get_database_connection()
+
+    try:
+        existing_user = connection.execute(
+            """
+            SELECT id
+            FROM users
+            WHERE (username = %s OR email = %s)
+              AND id != %s
+            """,
+            (
+                username,
+                email,
+                user_id
+            )
+        ).fetchone()
+
+        if existing_user:
+            return None
+
+        user = connection.execute(
+            """
+            UPDATE users
+            SET username = %s,
+                email = %s,
+                avatar = %s
+            WHERE id = %s
+            RETURNING id, username, email, avatar, created_at
+            """,
+            (
+                username,
+                email,
+                avatar,
+                user_id
+            )
+        ).fetchone()
+
+        if user is None:
+            return None
+
+        connection.commit()
+
+        return dict(user)
+
+    finally:
         connection.close()
         
         
@@ -196,6 +258,63 @@ def change_password(
         connection.commit()
 
         return True
+
+    finally:
+
+        connection.close()
+        
+        
+def update_profile(
+    user_id: int,
+    profile_data: UpdateProfileRequest
+):
+    connection = get_database_connection()
+
+    try:
+
+        existing_user = connection.execute(
+            """
+            SELECT id
+            FROM users
+            WHERE username = %s
+              AND id != %s
+            """,
+            (
+                profile_data.username,
+                user_id
+            )
+        ).fetchone()
+
+        if existing_user:
+            return None
+
+        user = connection.execute(
+            """
+            UPDATE users
+            SET
+                username = %s,
+                avatar = %s
+            WHERE id = %s
+            RETURNING
+                id,
+                username,
+                email,
+                avatar,
+                created_at
+            """,
+            (
+                profile_data.username,
+                profile_data.avatar,
+                user_id
+            )
+        ).fetchone()
+
+        if user is None:
+            return None
+
+        connection.commit()
+
+        return dict(user)
 
     finally:
 

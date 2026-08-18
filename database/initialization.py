@@ -18,6 +18,13 @@ def initialize_database():
             )
             """
         )
+        
+        connection.execute(
+            """
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS avatar TEXT NOT NULL DEFAULT 'avatar-01'
+            """
+        )
 
         connection.execute(
             """
