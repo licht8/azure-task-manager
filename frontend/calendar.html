@@ -338,6 +338,143 @@
 
 </div>
 
+<!-- ============================================================
+     TASK DETAILS MODAL
+     ============================================================ -->
+
+<div
+    id="taskDetailsModal"
+    class="modal hidden"
+>
+
+    <div class="modal-content task-details-modal">
+
+        <!-- Header -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-eyebrow">
+                    TASK
+                </span>
+
+                <h2 id="detailsTaskTitle">
+                    Task title
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="closeTaskDetails"
+                class="close-button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- Description -->
+
+        <div class="task-details-description-section">
+
+            <div class="task-details-label">
+                Description
+            </div>
+
+            <p
+                id="detailsTaskDescription"
+                class="task-details-description"
+            >
+                No description
+            </p>
+
+        </div>
+
+
+        <!-- Meta -->
+
+        <div class="task-details-meta">
+
+            <div class="task-details-item">
+
+                <span class="task-details-label">
+                    Status
+                </span>
+
+                <span
+                    id="detailsTaskStatus"
+                    class="badge"
+                >
+                    Pending
+                </span>
+
+            </div>
+
+
+            <div class="task-details-item">
+
+                <span class="task-details-label">
+                    Priority
+                </span>
+
+                <span
+                    id="detailsTaskPriority"
+                    class="badge"
+                >
+                    Medium
+                </span>
+
+            </div>
+
+
+            <div class="task-details-item">
+
+                <span class="task-details-label">
+                    Due date
+                </span>
+
+                <span
+                    id="detailsTaskDueDate"
+                    class="task-details-value"
+                >
+                    —
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Actions -->
+
+        <div class="form-actions">
+
+            <button
+                type="button"
+                id="deleteTaskButton"
+                class="button cancel-button"
+            >
+                Delete
+            </button>
+
+
+            <button
+                type="button"
+                id="editTaskButton"
+                class="button primary-button"
+            >
+                Edit Task
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <script src="/static/calendar.js?v=calendar1"></script>
 

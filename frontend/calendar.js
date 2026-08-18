@@ -50,6 +50,33 @@ const profileAvatar =
 
 const settingsButton =
     document.getElementById("settingsButton");
+	
+const taskDetailsModal =
+    document.getElementById("taskDetailsModal");
+
+const closeTaskDetails =
+    document.getElementById("closeTaskDetails");
+
+const detailsTaskTitle =
+    document.getElementById("detailsTaskTitle");
+
+const detailsTaskDescription =
+    document.getElementById("detailsTaskDescription");
+
+const detailsTaskStatus =
+    document.getElementById("detailsTaskStatus");
+
+const detailsTaskPriority =
+    document.getElementById("detailsTaskPriority");
+
+const detailsTaskDueDate =
+    document.getElementById("detailsTaskDueDate");
+
+const editTaskButton =
+    document.getElementById("editTaskButton");
+
+const deleteTaskButton =
+    document.getElementById("deleteTaskButton");
 
 
 // ============================================================
@@ -685,22 +712,221 @@ function createTaskElement(task) {
 
 function openTask(task) {
 
-    /*
-     * Redirect to Dashboard
-     * and tell app.js which task to edit.
-     */
+    console.log("Opening task:", task);
 
-    localStorage.setItem(
-        "edit_task_id",
-        task.id
+
+    if (!taskDetailsModal) {
+
+        console.error(
+            "taskDetailsModal not found"
+        );
+
+        return;
+
+    }
+
+
+    detailsTaskTitle.textContent =
+        task.title || "Untitled task";
+
+
+    detailsTaskDescription.textContent =
+        task.description ||
+        "No description";
+
+
+    detailsTaskStatus.textContent =
+        formatStatus(task.status);
+
+
+    detailsTaskPriority.textContent =
+        formatPriority(task.priority);
+
+
+    detailsTaskDueDate.textContent =
+        task.due_date
+            ? formatDateTime(task.due_date)
+            : "No due date";
+
+
+    taskDetailsModal.dataset.taskId =
+        task.id;
+
+
+    taskDetailsModal.classList.remove(
+        "hidden"
     );
-
-
-    window.location.href =
-        "/";
 
 }
 
+
+closeTaskDetails.addEventListener(
+    "click",
+    () => {
+
+        taskDetailsModal.classList.add(
+            "hidden"
+        );
+
+    }
+);
+
+
+taskDetailsModal.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            taskDetailsModal
+        ) {
+
+            taskDetailsModal.classList.add(
+                "hidden"
+            );
+
+        }
+
+    }
+);
+
+
+function closeTaskDetailsModal() {
+
+    taskDetailsModal.classList.add(
+        "hidden"
+    );
+
+}
+
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape" &&
+            !taskDetailsModal.classList.contains(
+                "hidden"
+            )
+        ) {
+
+            closeTaskDetailsModal();
+
+        }
+
+    }
+);
+
+
+editTaskButton.addEventListener(
+    "click",
+    () => {
+
+        const taskId =
+            taskDetailsModal.dataset.taskId;
+
+
+        if (!taskId) {
+            return;
+        }
+
+
+        localStorage.setItem(
+            "edit_task_id",
+            taskId
+        );
+
+
+        window.location.href =
+            "/";
+
+    }
+);
+
+
+deleteTaskButton.addEventListener(
+    "click",
+    async () => {
+
+        const taskId =
+            taskDetailsModal.dataset.taskId;
+
+
+        if (!taskId) {
+            return;
+        }
+
+
+        const confirmed =
+            confirm(
+                "Delete this task?"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await apiFetch(
+                    `${API_URL}/tasks/${taskId}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            if (!response) {
+                return;
+            }
+
+
+            if (!response.ok) {
+
+                const error =
+                    await response.json();
+
+
+                throw new Error(
+                    error.detail ||
+                    "Failed to delete task"
+                );
+
+            }
+
+
+            closeTaskDetailsModal();
+
+
+            /*
+             * Reload tasks and calendar
+             */
+
+            await loadTasks();
+
+
+        } catch (error) {
+
+            console.error(
+                "Failed to delete task:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Failed to delete task."
+            );
+
+        }
+
+    }
+);
 
 // ============================================================
 // Month navigation
@@ -797,6 +1023,73 @@ function isToday(date) {
 
 }
 
+function formatStatus(status) {
+
+    switch (status) {
+
+        case "pending":
+            return "Pending";
+
+        case "in_progress":
+            return "In Progress";
+
+        case "completed":
+            return "Completed";
+
+        default:
+            return status || "Unknown";
+
+    }
+
+}
+
+
+function formatPriority(priority) {
+
+    switch (priority) {
+
+        case "low":
+            return "Low";
+
+        case "medium":
+            return "Medium";
+
+        case "high":
+            return "High";
+
+        default:
+            return priority || "Unknown";
+
+    }
+
+}
+
+function formatDateTime(dateString) {
+
+    const date =
+        new Date(dateString);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "Invalid date";
+
+    }
+
+
+    return date.toLocaleString(
+        undefined,
+        {
+            dateStyle: "medium",
+            timeStyle: "short"
+        }
+    );
+
+}
 
 function formatTime(dateString) {
 
