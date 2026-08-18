@@ -27,13 +27,27 @@ The deployment script supports both:
 
 ## Features
 
-### Task Management
+### Dashboard
 
-The application provides REST endpoints for managing tasks.
+The application provides a web dashboard for managing tasks.
+The dashboard includes:
+task creation
+task editing
+task deletion
+task status management
+task priority management
+due dates
+task search
+task filtering
+task statistics
+recent activity
 
-Supported operations include: create a task, retrieve tasks, retrieve a specific task, update a task, delete a task
 
----
+### Calendar
+
+The application includes a calendar interface for viewing tasks by their due dates.
+The calendar provides a visual overview of scheduled tasks and allows users to navigate through their task schedule.
+
 
 ### Authentication
 
@@ -41,14 +55,58 @@ The application includes user authentication and account management.
 Authentication is implemented using JWT tokens and password hashing.
 The JWT secret is provided through the JWT_SECRET_KEY environment variable and is not stored in the source code.
 
-Supported functionality includes: user registration, user login, authenticated API requests, current user information, logout, password change, protected endpoints using JWT authentication
+Supported functionality includes:
+user registration
+user login
+authenticated API requests
+current user information
+logout
+password change
+protected endpoints using JWT authentication
 
----
 
-### Dashboard
+### Analytics
 
-The application provides a web dashboard for managing tasks.
-The dashboard includes: task creation, task editing, task deletion, task status management, task priority management, due dates, task search, task filtering, task statistics, recent activity
+The application provides a dedicated analytics page for authenticated users.
+
+Analytics include:
+total tasks
+completed tasks
+pending tasks
+tasks in progress
+overdue tasks
+task priority statistics
+recent task activity
+
+The analytics endpoint is protected and returns data belonging only to the authenticated user.
+API endpoint: `GET /analytics`
+
+
+### Activity Tracking
+
+The application tracks task-related activity for each user.
+Recent activity is displayed on the dashboard and analytics page.
+
+Activity information includes:
+task creation
+task updates
+task deletion
+task ID
+activity timestamp
+human-readable activity description
+
+
+### User Settings
+
+The application includes a settings page for managing user account information.
+Password changes are handled through an authenticated API endpoint.
+
+Users can:
+view account information
+change their password
+log out of the application
+
+
 
 ### Health Monitoring
 
@@ -77,6 +135,10 @@ azure-task-manager/
 │
 ├── api/
 │   ├── health.py
+│   ├── activity.py
+│   ├── analytics.py
+│   ├── auth.py
+│   ├── metrics.py
 │   ├── info.py
 │   └── tasks.py
 │
@@ -89,13 +151,31 @@ azure-task-manager/
 │   └── initialization.py
 │
 ├── schemas/
+│   ├── auth_schema.py
 │   └── task_schema.py
 │
 ├── services/
+│   ├── activity_service.py
+│   ├── analytics_service.py
+│   ├── auth_service.py
 │   └── task_service.py
 │
 ├── frontend/
-│   ├── app.js
+│   ├── analytics.html 
+│   ├── analytics.js 
+│   ├── app.js 
+│   ├── auth.css 
+│   ├── calendar.html 
+│   ├── calendar.js 
+│   ├── index.html 
+│   ├── login.html 
+│   ├── login.js 
+│   ├── logo.png 
+│   ├── register.html 
+│   ├── register.js 
+│   ├── settings.html 
+│   ├── settings.js 
+│   └── style.css
 │   ├── index.html
 │   └── style.css
 │
@@ -116,111 +196,66 @@ azure-task-manager/
 
 ---
 
-# Running Locally
+# Running with Docker
 
 ## Requirements
 
-Install the following:
-
-- Python 3.12+
-- Docker Desktop
-- PostgreSQL
-- PowerShell
-
----
+Install:
+```
+Docker Desktop
+Git
+```
 
 ## 1. Clone the repository
-
-```powershell
+```
 git clone https://github.com/licht8/azure-task-manager.git
 cd azure-task-manager
 ```
 
----
-
 ## 2. Create the environment file
 
 Copy the example environment file:
-
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Configure the required environment variables in `.env`.
-
-Do **not** commit `.env` to GitHub.
-
-The `.gitignore` file already excludes environment files.
-
----
-
-## 3. Install Python dependencies
-
-Create a virtual environment:
-
-```powershell
-python -m venv .venv
-```
-
-Activate it:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```powershell
-pip install -r requirements.txt
-```
-
----
-
-## 4. Start the application
-
-```powershell
-uvicorn main:app --reload --port 8000
-```
-
-The API will be available at:
-
+Configure the required environment variables in .env:
 ```text
-http://localhost:8000
+DATABASE_URL=postgresql://taskuser:taskpassword@localhost:5432/tasks
+JWT_SECRET_KEY=change-this-secret-key
 ```
+For local Docker development, these values can be loaded from .env
+The .env file is intended for local development and must not be committed to GitHub.
 
-Swagger UI:
 
-```text
-http://localhost:8000/docs
-```
-
-OpenAPI specification:
-
-```text
-http://localhost:8000/openapi.json
-```
-
----
-
-# Running with Docker
-
-Build the Docker image:
-
+## 3. Build the Docker image
 ```powershell
 docker build -t azure-task-manager .
 ```
 
-Run the container:
-
+## 4. Run the container using .env:
 ```powershell
 docker run -p 8000:8000 --env-file .env azure-task-manager
 ```
 
 The application will be available at:
-
 ```text
 http://localhost:8000
 ```
+
+Swagger UI:
+```
+http://localhost:8000/docs
+```
+
+OpenAPI specification:
+```
+http://localhost:8000/openapi.json
+```
+
+## 5. Stop the application
+If the container is running in the foreground, press: __`Ctrl + C`__
+The --rm option automatically removes the container after it stops.
 
 ---
 
@@ -379,7 +414,6 @@ will automatically use:
 | `imageTag` | Docker image tag used for the application image. |
 
 Additional documentation for the configuration file is available in:
-
 ```text
 CONFIG.md
 ```
@@ -389,7 +423,6 @@ CONFIG.md
 # Example Azure Configuration
 
 With the example `config.json`, the deployment uses:
-
 ```text
 Subscription:
   xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
