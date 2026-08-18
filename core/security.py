@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+import os
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -42,7 +43,10 @@ def verify_password(
 # JWT configuration
 # ============================================================
 
-JWT_SECRET_KEY = "change-this-secret-key"
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
+if not JWT_SECRET_KEY:
+    raise RuntimeError("JWT_SECRET_KEY environment variable is not set")
 
 JWT_ALGORITHM = "HS256"
 
