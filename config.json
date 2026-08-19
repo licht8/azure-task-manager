@@ -5,13 +5,13 @@
 
     "resourceGroup": "rg-task-manager",
 
-    "acrName": "",
+    "acrName": "taskmanager",
 
-    "environmentName": "docker-demo-env",
+    "environmentName": "",
 
     "containerAppName": "containerapp-task-manager",
 
-    "postgresServerName": "",
+    "postgresServerName": "chumakzes",
 
     "postgresAdmin": "taskuser",
 
