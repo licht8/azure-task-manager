@@ -143,6 +143,7 @@ azure-task-manager/
 │   └── tasks.py
 │
 ├── core/
+│   ├── security.py
 │   └── application_metrics.py
 │
 ├── database/
@@ -161,6 +162,12 @@ azure-task-manager/
 │   └── task_service.py
 │
 ├── frontend/
+│   ├── avatars/
+│   │   ├── avatar-01.png
+│   │   ├── avatar-02.png
+│   │   ├── ...
+│   │   └── avatar-10.png
+│   │
 │   ├── analytics.html 
 │   ├── analytics.js 
 │   ├── app.js 
@@ -170,12 +177,13 @@ azure-task-manager/
 │   ├── index.html 
 │   ├── login.html 
 │   ├── login.js 
-│   ├── logo.png 
+│   ├── logo.png
+│   ├── profile.html
+│   ├── profile.js
 │   ├── register.html 
 │   ├── register.js 
 │   ├── settings.html 
 │   ├── settings.js 
-│   └── style.css
 │   ├── index.html
 │   └── style.css
 │
