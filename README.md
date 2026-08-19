@@ -667,8 +667,3 @@ az containerapp show `
   -o table
 ```
 
----
-
-# License
-
-This project is intended for educational and demonstration purposes.
