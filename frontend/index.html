@@ -77,9 +77,7 @@
                 class="nav-item active"
             >
 
-                <span class="nav-icon">
-                    ▦
-                </span>
+
 
                 <span>
                     Dashboard
@@ -93,9 +91,7 @@
                 class="nav-item"
             >
 
-                <span class="nav-icon">
-                    ◷
-                </span>
+
 
                 <span>
                     Calendar
@@ -109,13 +105,33 @@
 				class="nav-item"
 			>
 
-				<span class="nav-icon">
-					◈
-				</span>
+
 
 				Analytics
 
 			</a>
+			
+			<!-- Projects -->
+
+			<div class="nav-section-title projects-title">
+				PROJECTS
+			</div>
+
+			<div
+				id="projectsList"
+				class="projects-list"
+			>
+				<!-- Projects loaded dynamically -->
+			</div>
+
+			<button
+				type="button"
+				id="newProjectButton"
+				class="sidebar-project-create"
+			>
+				<span>+</span>
+				New Project
+			</button>
 
         </nav>
 
@@ -161,9 +177,7 @@
 					class="sidebar-user-action"
 				>
 
-					<span>
-						◉
-					</span>
+
 
 					Profile
 
@@ -178,9 +192,7 @@
 					id="settingsButton"
 				>
 
-					<span>
-						⚙
-					</span>
+
 
 					Settings
 
@@ -195,9 +207,7 @@
 					id="logoutButton"
 				>
 
-					<span>
-						⇥
-					</span>
+
 
 					Logout
 
@@ -618,7 +628,23 @@
 
             </div>
 
+			<!-- Project -->
 
+			<div class="form-group">
+
+				<label for="taskProject">
+					Project
+				</label>
+
+				<select id="taskProject">
+
+					<option value="">
+						No project
+					</option>
+
+				</select>
+
+			</div>
 
             <!-- Status + Priority -->
 
@@ -728,8 +754,89 @@
 </div>
 
 
+<!-- ============================================================
+     PROJECT MODAL
+     ============================================================ -->
+
+<div
+    id="projectModal"
+    class="modal hidden"
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-eyebrow">
+                    PROJECT
+                </span>
+
+                <h2>
+                    New Project
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                id="closeProjectModal"
+                class="close-button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="projectForm">
+
+            <div class="form-group">
+
+                <label for="projectName">
+                    Project name
+                </label>
+
+                <input
+                    id="projectName"
+                    type="text"
+                    placeholder="Enter project name..."
+                    maxlength="100"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    id="cancelProjectButton"
+                    class="button cancel-button"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="button primary-button"
+                >
+                    Create Project
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
 
 <script src="/static/app.js?v=4"></script>
+<script src="/static/projects.js?v=1"></script>
 
 </body>
 

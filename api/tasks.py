@@ -17,12 +17,17 @@ from services.task_service import (
     get_task,
     update_task,
     delete_task,
-    get_task_stats
+    get_task_stats,
+    ProjectNotFoundError
 )
 
 
 router = APIRouter()
 
+
+# ============================================================
+# Create Task
+# ============================================================
 
 @router.post(
     "/tasks",
@@ -35,11 +40,25 @@ def create_task_endpoint(
     task: TaskCreate,
     current_user: dict = Depends(get_current_user)
 ):
-    return create_task(
-        task,
-        current_user["id"]
-    )
 
+    try:
+
+        return create_task(
+            task,
+            current_user["id"]
+        )
+
+    except ProjectNotFoundError:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
+
+
+# ============================================================
+# List Tasks
+# ============================================================
 
 @router.get(
     "/tasks",
@@ -49,6 +68,10 @@ def create_task_endpoint(
     description="List only tasks belonging to the authenticated user."
 )
 def get_tasks_endpoint(
+    project_id: int | None = Query(
+        default=None,
+        description="Filter tasks by project"
+    ),
     status: TaskStatus | None = Query(
         default=None,
         description="Filter tasks by status"
@@ -75,15 +98,21 @@ def get_tasks_endpoint(
     ),
     current_user: dict = Depends(get_current_user)
 ):
+
     return get_all_tasks(
         user_id=current_user["id"],
         status=status,
         priority=priority,
         search=search,
+        project_id=project_id,
         skip=skip,
         limit=limit
     )
 
+
+# ============================================================
+# Task Statistics
+# ============================================================
 
 @router.get(
     "/tasks/stats",
@@ -100,6 +129,10 @@ def get_task_stats_endpoint(
         user_id=current_user["id"]
     )
 
+
+# ============================================================
+# Get Task
+# ============================================================
 
 @router.get(
     "/tasks/{task_id}",
@@ -119,6 +152,7 @@ def get_task_endpoint(
     )
 
     if task is None:
+
         raise HTTPException(
             status_code=404,
             detail="Task not found"
@@ -126,6 +160,10 @@ def get_task_endpoint(
 
     return task
 
+
+# ============================================================
+# Update Task
+# ============================================================
 
 @router.put(
     "/tasks/{task_id}",
@@ -140,13 +178,23 @@ def update_task_endpoint(
     current_user: dict = Depends(get_current_user)
 ):
 
-    updated_task = update_task(
-        task_id,
-        task,
-        current_user["id"]
-    )
+    try:
+
+        updated_task = update_task(
+            task_id,
+            task,
+            current_user["id"]
+        )
+
+    except ProjectNotFoundError:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
 
     if updated_task is None:
+
         raise HTTPException(
             status_code=404,
             detail="Task not found"
@@ -154,6 +202,10 @@ def update_task_endpoint(
 
     return updated_task
 
+
+# ============================================================
+# Delete Task
+# ============================================================
 
 @router.delete(
     "/tasks/{task_id}",
@@ -172,6 +224,7 @@ def delete_task_endpoint(
     )
 
     if not deleted:
+
         raise HTTPException(
             status_code=404,
             detail="Task not found"

@@ -10,6 +10,10 @@ from schemas.task_schema import (
 )
 
 
+class ProjectNotFoundError(Exception):
+    pass
+
+
 def create_task(
     task: TaskCreate,
     user_id: int
@@ -22,6 +26,24 @@ def create_task(
 
     try:
 
+        if task.project_id is not None:
+
+            project = connection.execute(
+                """
+                SELECT id
+                FROM projects
+                WHERE id = %s
+                AND user_id = %s
+                """,
+                (
+                    task.project_id,
+                    user_id
+                )
+            ).fetchone()
+
+            if project is None:
+                raise ProjectNotFoundError()
+
         created_at = datetime.now(timezone.utc)
 
         cursor = connection.execute(
@@ -33,9 +55,11 @@ def create_task(
                 status,
                 priority,
                 due_date,
+                project_id,
                 created_at
             )
             VALUES (
+                %s,
                 %s,
                 %s,
                 %s,
@@ -53,12 +77,13 @@ def create_task(
                 task.status.value,
                 task.priority.value,
                 task.due_date,
+                task.project_id,
                 created_at
             )
         )
 
         task_id = cursor.fetchone()["id"]
-        
+
         log_activity(
             connection=connection,
             user_id=user_id,
@@ -76,6 +101,7 @@ def create_task(
             "status": task.status,
             "priority": task.priority,
             "due_date": task.due_date,
+            "project_id": task.project_id,
             "created_at": created_at
         }
 
@@ -90,10 +116,12 @@ def get_all_tasks(
     priority=None,
     search=None,
     skip=0,
-    limit=10
+    limit=10,
+    project_id=None
 ):
     """
     Return only tasks belonging to the authenticated user.
+    Optionally filter tasks by project.
     """
 
     connection = get_database_connection()
@@ -108,12 +136,33 @@ def get_all_tasks(
                 status,
                 priority,
                 due_date,
+                project_id,
                 created_at
             FROM tasks
             WHERE user_id = %s
         """
 
         parameters = [user_id]
+
+
+        # ====================================================
+        # Project filter
+        # ====================================================
+
+        if project_id is not None:
+
+            query += """
+                AND project_id = %s
+            """
+
+            parameters.append(
+                project_id
+            )
+
+
+        # ====================================================
+        # Status filter
+        # ====================================================
 
         if status is not None:
 
@@ -125,6 +174,11 @@ def get_all_tasks(
                 status.value
             )
 
+
+        # ====================================================
+        # Priority filter
+        # ====================================================
+
         if priority is not None:
 
             query += """
@@ -134,6 +188,11 @@ def get_all_tasks(
             parameters.append(
                 priority.value
             )
+
+
+        # ====================================================
+        # Search
+        # ====================================================
 
         if search is not None:
 
@@ -151,6 +210,11 @@ def get_all_tasks(
                 search_pattern
             ])
 
+
+        # ====================================================
+        # Pagination
+        # ====================================================
+
         query += """
             ORDER BY id DESC
             LIMIT %s
@@ -162,15 +226,18 @@ def get_all_tasks(
             skip
         ])
 
+
         tasks = connection.execute(
             query,
             parameters
         ).fetchall()
 
+
         return [
             dict(task)
             for task in tasks
         ]
+
 
     finally:
 
@@ -198,6 +265,7 @@ def get_task(
                 status,
                 priority,
                 due_date,
+                project_id,
                 created_at
             FROM tasks
             WHERE id = %s
@@ -278,6 +346,30 @@ def update_task(
             else existing_task["due_date"]
         )
 
+        new_project_id = (
+            task.project_id
+            if task.project_id is not None
+            else existing_task["project_id"]
+        )
+
+        if new_project_id is not None:
+
+            project = connection.execute(
+                """
+                SELECT id
+                FROM projects
+                WHERE id = %s
+                AND user_id = %s
+                """,
+                (
+                    new_project_id,
+                    user_id
+                )
+            ).fetchone()
+
+            if project is None:
+                raise ProjectNotFoundError()
+
         connection.execute(
             """
             UPDATE tasks
@@ -286,7 +378,8 @@ def update_task(
                 description = %s,
                 status = %s,
                 priority = %s,
-                due_date = %s
+                due_date = %s,
+                project_id = %s
             WHERE id = %s
             AND user_id = %s
             """,
@@ -296,18 +389,19 @@ def update_task(
                 new_status,
                 new_priority,
                 new_due_date,
+                new_project_id,
                 task_id,
                 user_id
             )
         )
-        
+
         log_activity(
-        connection=connection,
-        user_id=user_id,
-        task_id=task_id,
-        action="updated",
-        description=f"Task '{new_title}' was updated"
-)
+            connection=connection,
+            user_id=user_id,
+            task_id=task_id,
+            action="updated",
+            description=f"Task '{new_title}' was updated"
+        )
 
         connection.commit()
 
@@ -320,6 +414,7 @@ def update_task(
                 status,
                 priority,
                 due_date,
+                project_id,
                 created_at
             FROM tasks
             WHERE id = %s
@@ -368,7 +463,6 @@ def delete_task(
         if existing_task is None:
             return False
 
-
         log_activity(
             connection=connection,
             user_id=user_id,
@@ -376,7 +470,6 @@ def delete_task(
             action="deleted",
             description=f"Task '{existing_task['title']}' was deleted"
         )
-
 
         connection.execute(
             """
@@ -389,7 +482,6 @@ def delete_task(
                 user_id
             )
         )
-
 
         connection.commit()
 

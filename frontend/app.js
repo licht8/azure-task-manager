@@ -114,6 +114,24 @@ const settingsButton =
 
 const taskModal =
     document.getElementById("taskModal");
+	
+const projectModal =
+    document.getElementById("projectModal");
+
+const projectForm =
+    document.getElementById("projectForm");
+
+const projectName =
+    document.getElementById("projectName");
+
+const closeProjectModal =
+    document.getElementById("closeProjectModal");
+
+const cancelProjectButton =
+    document.getElementById("cancelProjectButton");
+
+const newProjectButton =
+    document.getElementById("newProjectButton");
 
 const closeModal =
     document.getElementById("closeModal");
@@ -145,6 +163,11 @@ const taskPriority =
 const taskDueDate =
     document.getElementById("taskDueDate");
 	
+const projectsList =
+    document.getElementById("projectsList");
+
+const taskProject =
+    document.getElementById("taskProject");
 	
 
 
@@ -155,6 +178,23 @@ const taskDueDate =
 let editingTaskId = null;
 
 let searchTimeout = null;
+
+let selectedProjectId = null;
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const projectIdFromUrl =
+    urlParams.get("project_id");
+
+if (projectIdFromUrl) {
+
+    selectedProjectId =
+        Number(projectIdFromUrl);
+
+}
 
 
 // ============================================================
@@ -316,6 +356,285 @@ settingsButton.addEventListener(
 
 
 // ============================================================
+// Projects
+// ============================================================
+
+async function loadProjects() {
+
+    try {
+
+        const response =
+            await apiFetch(
+                `${API_URL}/projects`
+            );
+
+        if (!response) {
+            return;
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load projects"
+            );
+        }
+
+        const projects =
+            await response.json();
+
+        renderProjects(projects);
+        populateProjectSelect(projects);
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load projects:",
+            error
+        );
+    }
+}
+
+function populateProjectSelect(projects) {
+
+    if (!taskProject) {
+        return;
+    }
+
+    taskProject.innerHTML = `
+        <option value="">
+            No project
+        </option>
+    `;
+
+    projects.forEach(project => {
+
+        const option =
+            document.createElement("option");
+
+        option.value =
+            project.id;
+
+        option.textContent =
+            project.name;
+
+        taskProject.appendChild(
+            option
+        );
+    });
+}
+
+function renderProjects(projects) {
+
+    projectsList.innerHTML = "";
+
+    if (projects.length === 0) {
+
+        projectsList.innerHTML = `
+            <div class="projects-empty">
+                No projects yet
+            </div>
+        `;
+
+        return;
+    }
+
+    projects.forEach(project => {
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+
+        button.className =
+            "sidebar-project-item";
+
+        if (
+            selectedProjectId === project.id
+        ) {
+
+            button.classList.add(
+                "active"
+            );
+        }
+
+        button.innerHTML = `
+            <span class="project-dot"></span>
+
+            <span class="project-name">
+                ${escapeHtml(project.name)}
+            </span>
+        `;
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                selectProject(
+                    project.id
+                );
+            }
+        );
+
+        projectsList.appendChild(
+            button
+        );
+
+    });
+}
+
+
+function selectProject(projectId) {
+
+    selectedProjectId =
+        projectId;
+
+    loadProjects();
+    loadTasks();
+}
+
+
+// ============================================================
+// Project Modal
+// ============================================================
+
+function openProjectModal() {
+
+    projectForm.reset();
+
+    projectModal.classList.remove(
+        "hidden"
+    );
+
+    setTimeout(
+        () => projectName.focus(),
+        50
+    );
+}
+
+
+function closeProjectModalWindow() {
+
+    projectModal.classList.add(
+        "hidden"
+    );
+
+    projectForm.reset();
+}
+
+
+newProjectButton.addEventListener(
+    "click",
+    openProjectModal
+);
+
+
+closeProjectModal.addEventListener(
+    "click",
+    closeProjectModalWindow
+);
+
+
+cancelProjectButton.addEventListener(
+    "click",
+    closeProjectModalWindow
+);
+
+
+projectModal.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target === projectModal
+        ) {
+
+            closeProjectModalWindow();
+        }
+    }
+);
+
+
+// ============================================================
+// Create Project
+// ============================================================
+
+projectForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        const name =
+            projectName.value.trim();
+
+
+        if (!name) {
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await apiFetch(
+                    `${API_URL}/projects`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                name: name
+                            })
+                    }
+                );
+
+
+            if (!response) {
+                return;
+            }
+
+
+            if (!response.ok) {
+
+                const error =
+                    await response.json();
+
+
+                throw new Error(
+                    error.detail ||
+                    "Failed to create project"
+                );
+            }
+
+
+            closeProjectModalWindow();
+
+
+            await loadProjects();
+
+
+        } catch (error) {
+
+            console.error(
+                "Failed to create project:",
+                error
+            );
+
+
+            alert(error.message);
+        }
+
+    }
+);
+
+
+// ============================================================
 // Load tasks
 // ============================================================
 
@@ -359,6 +678,13 @@ async function loadTasks() {
                 priority
             );
         }
+		
+		if (selectedProjectId !== null) {
+			params.append(
+				"project_id",
+				selectedProjectId
+			);
+		}
 
 
         params.append(
@@ -629,6 +955,9 @@ function closeTaskModal() {
 
     taskPriority.value =
         "medium";
+		
+	taskProject.value =
+    "";
 }
 
 
@@ -719,6 +1048,11 @@ taskForm.addEventListener(
 
             priority:
                 taskPriority.value,
+				
+			project_id:
+				taskProject.value
+					? Number(taskProject.value)
+					: null,
 
             due_date:
                 taskDueDate.value
@@ -864,6 +1198,11 @@ async function openEditTask(taskId) {
 
         taskPriority.value =
             task.priority;
+		
+		taskProject.value =
+			task.project_id
+				? String(task.project_id)
+				: "";
 
 
         if (task.due_date) {
@@ -1103,5 +1442,7 @@ function escapeHtml(value) {
 // ============================================================
 
 loadCurrentUser();
+
+loadProjects();
 
 loadDashboard();

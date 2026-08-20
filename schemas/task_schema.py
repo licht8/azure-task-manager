@@ -45,6 +45,11 @@ class TaskCreate(BaseModel):
         default=None,
         description="Optional task deadline"
     )
+    
+    project_id: int | None = Field(
+        default=None,
+        description="Optional project ID"
+    )
 
 
 class TaskUpdate(BaseModel):
@@ -76,6 +81,11 @@ class TaskUpdate(BaseModel):
         default=None,
         description="Updated task deadline"
     )
+    
+    project_id: int | None = Field(
+        default=None,
+        description="Updated project ID"
+    )
 
 
 class TaskResponse(BaseModel):
@@ -88,6 +98,8 @@ class TaskResponse(BaseModel):
     priority: TaskPriority
 
     due_date: datetime | None
+    
+    project_id: int | None
 
     created_at: datetime
     

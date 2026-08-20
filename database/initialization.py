@@ -48,6 +48,30 @@ def initialize_database():
             ON DELETE CASCADE
             """
         )
+        
+        
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS projects (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                user_id INTEGER NOT NULL
+                    REFERENCES users(id)
+                    ON DELETE CASCADE,
+                created_at TIMESTAMP NOT NULL
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            ALTER TABLE tasks
+            ADD COLUMN IF NOT EXISTS project_id INTEGER
+                REFERENCES projects(id)
+                ON DELETE SET NULL
+            """
+        )
 
         connection.execute(
             """
