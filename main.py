@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -17,24 +19,22 @@ from core.application_metrics import increment_requests
 from database.initialization import initialize_database
 
 
-app = FastAPI(
-    title="Docker Azure Demo API",
-    description="Cloud-native task management API running with Docker and Azure",
-    version="2.0.0"
+app = FastAPI()
+
+frontend_url = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:3000"
 )
+
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    frontend_url,
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-
-        # old frontend
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

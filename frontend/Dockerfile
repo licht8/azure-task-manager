@@ -6,6 +6,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# Public API URL is injected during Docker build
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 # Copy application source
 COPY . .
 
