@@ -109,7 +109,18 @@ function Sidebar() {
 
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className={cn("grid size-9 place-items-center rounded-full text-lg", avatar.tint)}>{avatar.emoji}</div>
+		<div
+		  className={cn(
+			"grid size-9 place-items-center overflow-hidden rounded-full",
+			avatar.tint,
+		  )}
+		>
+		  <img
+			src={avatar.image}
+			alt={avatar.label}
+			className="size-7 object-contain"
+		  />
+		</div>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{username}</p>
             <p className="truncate text-xs text-muted-foreground">{email}</p>

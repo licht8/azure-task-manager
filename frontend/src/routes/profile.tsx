@@ -138,7 +138,11 @@ function ProfilePage() {
                       "border-primary ring-2 ring-primary/40",
                   )}
                 >
-                  {a.emoji}
+					<img
+					  src={a.image}
+					  alt={a.label}
+					  className="size-10 object-contain"
+					/>
                 </button>
               ))}
             </div>
@@ -187,14 +191,18 @@ function ProfilePage() {
           </div>
 
           <div className="mt-6 flex items-center gap-3 rounded-xl bg-secondary px-4 py-3">
-            <span
-              className={cn(
-                "grid size-10 place-items-center rounded-full text-xl",
-                getAvatar(draftAvatar).tint,
-              )}
-            >
-              {getAvatar(draftAvatar).emoji}
-            </span>
+			<span
+			  className={cn(
+				"grid size-10 place-items-center overflow-hidden rounded-full",
+				getAvatar(draftAvatar).tint,
+			  )}
+			>
+			  <img
+				src={getAvatar(draftAvatar).image}
+				alt={getAvatar(draftAvatar).label}
+				className="size-8 object-contain"
+			  />
+			</span>
 
             <div>
               <p className="text-xs text-muted-foreground">
