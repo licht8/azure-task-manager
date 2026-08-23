@@ -53,21 +53,27 @@ function LoginPage() {
         body,
       });
 
-      if (!response.ok) {
-        let message = "Invalid username or password";
+		if (!response.ok) {
+		  let message = "Invalid username or password.";
 
-        try {
-          const data = await response.json();
+		  try {
+			const data = await response.json();
 
-          if (data.detail) {
-            message = data.detail;
-          }
-        } catch {
-          // Ignore JSON parsing errors
-        }
+			if (typeof data.detail === "string") {
+			  message = data.detail;
+			}
+		  } catch {
+			// Response does not contain JSON.
+		  }
 
-        throw new Error(message);
-      }
+		  if (response.status === 401) {
+			message = "Invalid username or password.";
+		  } else if (response.status >= 500) {
+			message = "Server error. Please try again later.";
+		  }
+
+		  throw new Error(message);
+		}
 
       const data = await response.json();
 
@@ -78,15 +84,15 @@ function LoginPage() {
 
 		window.location.href = "/";
 
-    } catch (error) {
-      console.error("Login failed:", error);
+	} catch (error) {
+	  console.error("Login failed:", error);
 
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Login failed"
-      );
-    } finally {
+	  setError(
+		error instanceof Error
+		  ? error.message
+		  : "Unable to log in. Please try again.",
+	  );
+	} finally {
       setLoading(false);
     }
   }

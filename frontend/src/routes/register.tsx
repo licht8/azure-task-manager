@@ -62,32 +62,45 @@ function RegisterPage() {
         }),
       });
 
-      if (!response.ok) {
-        let message = "Registration failed";
+		if (!response.ok) {
+		  let message = "Registration failed.";
 
-        try {
-          const data = await response.json();
+		  try {
+			const data = await response.json();
 
-          if (data.detail) {
-            message = data.detail;
-          }
-        } catch {
-          // Ignore JSON parsing errors
-        }
+			if (typeof data.detail === "string") {
+			  message = data.detail;
+			} else if (Array.isArray(data.detail)) {
+			  message = data.detail
+				.map((item: { msg?: string }) => item.msg)
+				.filter(Boolean)
+				.join(", ");
+			}
+		  } catch {
+			// Response does not contain JSON.
+		  }
 
-        throw new Error(message);
-      }
+		  if (response.status === 409) {
+			message = "An account with this username or email already exists.";
+		  } else if (response.status === 422) {
+			message = "Please check the entered information.";
+		  } else if (response.status >= 500) {
+			message = "Server error. Please try again later.";
+		  }
+
+		  throw new Error(message);
+		}
 
       navigate({ to: "/login" });
-    } catch (error) {
-      console.error("Registration failed:", error);
+		} catch (error) {
+	  console.error("Registration failed:", error);
 
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Registration failed",
-      );
-    } finally {
+	  setError(
+		error instanceof Error
+		  ? error.message
+		  : "Unable to create your account. Please try again.",
+	  );
+	} finally {
       setLoading(false);
     }
   }
