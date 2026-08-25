@@ -179,18 +179,19 @@ docker compose up --build
 Docker Compose will build and start both services.
 
 The application will be available at:
+Frontend:
 ```text
+http://localhost:3000
+```
+
+Backend API:
+```
 http://localhost:8000
 ```
 
 Swagger UI:
 ```
 http://localhost:8000/docs
-```
-
-OpenAPI specification:
-```
-http://localhost:8000/openapi.json
 ```
 
 ## Stop the application
