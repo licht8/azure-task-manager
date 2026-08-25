@@ -1,9 +1,8 @@
 # Azure Task Manager
 
-Cloud-native task management API built with **FastAPI, Docker, PostgreSQL and Microsoft Azure**.
+Cloud-native task management application built with **FastAPI, React, TanStack Start, Docker, PostgreSQL and Microsoft Azure**.
 
-The project demonstrates a complete application deployment workflow using containerization and Azure cloud services:
-
+The project consists of a backend REST API and a modern frontend workspace for managing tasks, projects and user accounts, also, the project demonstrates a complete application deployment workflow using containerization and Azure cloud services:
 - FastAPI REST API
 - PostgreSQL database
 - Docker containerization
@@ -41,6 +40,10 @@ task search
 task filtering
 task statistics
 recent activity
+create projects
+view project tasks
+filter tasks by project
+navigate between projects using the sidebar
 
 
 ### Calendar
@@ -107,6 +110,15 @@ change their password
 log out of the application
 
 
+### User Profile
+
+Authenticated users can manage their profile information.
+
+Users can:
+- update their username
+- select a profile avatar
+- view their account email address
+
 
 ### Health Monitoring
 
@@ -128,83 +140,7 @@ The `/health` endpoint is also used by Azure Container Apps health probes.
 
 ---
 
-## Project Structure
-
-```text
-azure-task-manager/
-│
-├── api/
-│   ├── health.py
-│   ├── activity.py
-│   ├── analytics.py
-│   ├── auth.py
-│   ├── metrics.py
-│   ├── info.py
-│   └── tasks.py
-│
-├── core/
-│   ├── security.py
-│   └── application_metrics.py
-│
-├── database/
-│   ├── config.py
-│   ├── connection.py
-│   └── initialization.py
-│
-├── schemas/
-│   ├── auth_schema.py
-│   └── task_schema.py
-│
-├── services/
-│   ├── activity_service.py
-│   ├── analytics_service.py
-│   ├── auth_service.py
-│   └── task_service.py
-│
-├── frontend/
-│   ├── avatars/
-│   │   ├── avatar-01.png
-│   │   ├── avatar-02.png
-│   │   ├── ...
-│   │   └── avatar-10.png
-│   │
-│   ├── analytics.html 
-│   ├── analytics.js 
-│   ├── app.js 
-│   ├── auth.css 
-│   ├── calendar.html 
-│   ├── calendar.js 
-│   ├── index.html 
-│   ├── login.html 
-│   ├── login.js 
-│   ├── logo.png
-│   ├── profile.html
-│   ├── profile.js
-│   ├── register.html 
-│   ├── register.js 
-│   ├── settings.html 
-│   ├── settings.js 
-│   ├── index.html
-│   └── style.css
-│
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
-│
-├── .env.example
-├── .gitignore
-├── CONFIG.md
-├── config.json
-├── Dockerfile
-├── containerapp.yaml
-├── main.py
-├── requirements.txt
-└── setup-azure.ps1
-```
-
----
-
-# Running with Docker
+# Running with Docker Compose
 
 ## Requirements
 
@@ -236,15 +172,11 @@ For local Docker development, these values can be loaded from .env
 The .env file is intended for local development and must not be committed to GitHub.
 
 
-## 3. Build the Docker image
+## 3. Start the application
 ```powershell
-docker build -t azure-task-manager .
+docker compose up --build
 ```
-
-## 4. Run the container using .env:
-```powershell
-docker run -p 8000:8000 --env-file .env azure-task-manager
-```
+Docker Compose will build and start both services.
 
 The application will be available at:
 ```text
@@ -261,9 +193,17 @@ OpenAPI specification:
 http://localhost:8000/openapi.json
 ```
 
-## 5. Stop the application
-If the container is running in the foreground, press: __`Ctrl + C`__
-The --rm option automatically removes the container after it stops.
+## Stop the application
+Press: __`Ctrl + C`__
+Or run:
+```
+docker compose down
+```
+
+## Rebuild after changes
+```
+docker compose up --build
+```
 
 ---
 
@@ -272,7 +212,7 @@ The --rm option automatically removes the container after it stops.
 The project includes an automated Azure deployment script:
 
 ```text
-setup-azure.ps1
+setup-azure-v2.ps1
 ```
 
 The script automates the deployment and configuration of the required Azure infrastructure.
