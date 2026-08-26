@@ -17,6 +17,7 @@ import {
 import {
   getProjects,
   createProjectRequest,
+  deleteProjectRequest,
   type ApiProject,
 } from "@/api/projects";
 
@@ -71,6 +72,8 @@ type Store = {
   name: string,
   taskIds: number[],
 ) => Promise<void>;
+
+  deleteProject: (id: number) => Promise<void>;
 
   projectName: (id: number | null | undefined) => string;
 
@@ -228,45 +231,55 @@ export function WorkspaceProvider({
         );
       },
 
-	createProject: async (name, taskIds) => {
-	  const created = await createProjectRequest(name);
+		createProject: async (name, taskIds) => {
+		  const created = await createProjectRequest(name);
 
-	  setProjects((prev) => [
-		...prev,
-		apiProjectToProject(created),
-	  ]);
+		  setProjects((prev) => [
+			...prev,
+			apiProjectToProject(created),
+		  ]);
 
-	  for (const taskId of taskIds) {
-		const task = tasks.find((t) => t.id === taskId);
+		  for (const taskId of taskIds) {
+			const task = tasks.find((t) => t.id === taskId);
 
-		if (!task) continue;
+			if (!task) continue;
 
-		await updateTaskRequest(taskId, {
-		  title: task.title,
-		  description: task.description,
-		  project_id: created.id,
-		  status:
-			task.status === "in-progress"
-			  ? "in_progress"
-			  : task.status,
-		  priority: task.priority,
-		  due_date: task.due || null,
-		});
-	  }
+			await updateTaskRequest(taskId, {
+			  title: task.title,
+			  description: task.description,
+			  project_id: created.id,
+			  status:
+				task.status === "in-progress"
+				  ? "in_progress"
+				  : task.status,
+			  priority: task.priority,
+			  due_date: task.due || null,
+			});
+		  }
 
-	  await reloadTasks();
-	},
+		  await reloadTasks();
+		},
 
-      projectName: (id) => {
-        if (id == null) {
-          return "No project";
-        }
+		deleteProject: async (id) => {
+		  await deleteProjectRequest(id);
 
-        return (
-          projects.find((project) => project.id === id)?.name ??
-          "No project"
-        );
-      },
+		  setProjects((prev) =>
+			prev.filter((project) => project.id !== id)
+		  );
+
+		  await reloadTasks();
+		},
+
+		projectName: (id) => {
+		  if (id == null) {
+			return "No project";
+		  }
+
+		  return (
+			projects.find((project) => project.id === id)?.name ??
+			"No project"
+		  );
+		},
 
       reloadTasks,
       reloadProjects,

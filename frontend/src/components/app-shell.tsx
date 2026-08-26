@@ -8,9 +8,11 @@ import {
   Settings,
   LogOut,
   FolderKanban,
+  Trash2,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { ProjectDialog } from "@/components/project-dialog";
+import { DeleteProjectDialog } from "@/components/delete-project-dialog";
 import { getAvatar } from "@/data/avatars";
 import { useWorkspace } from "@/data/store";
 import { cn } from "@/lib/utils";
@@ -35,6 +37,11 @@ function Sidebar() {
   const navigate = useNavigate();
   const { projects, username, email, avatarId, logout } = useWorkspace();
   const [projectOpen, setProjectOpen] = useState(false);
+  const [deleteProjectOpen, setDeleteProjectOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
   const avatar = getAvatar(avatarId);
   
 	const handleLogout = () => {
@@ -81,18 +88,49 @@ function Sidebar() {
             {projects.map((p) => {
               const active = pathname === "/" && search?.project === p.id;
               return (
-                <li key={p.id}>
-                  <button
-                    onClick={() => navigate({ to: "/", search: { project: p.id } })}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                      active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
-                    )}
-                  >
-                    <span className="size-1.5 rounded-full bg-primary/60" />
-                    <span className="truncate">{p.name}</span>
-                  </button>
-                </li>
+				<li key={p.id}>
+				  <div
+					className={cn(
+					  "group flex items-center gap-1 rounded-lg transition-colors",
+					  active && "bg-sidebar-accent",
+					)}
+				  >
+					<button
+					  onClick={() =>
+						navigate({
+						  to: "/",
+						  search: { project: p.id },
+						})
+					  }
+					  className={cn(
+						"flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+						active &&
+						  "font-medium text-sidebar-accent-foreground",
+					  )}
+					>
+					  <span className="size-1.5 shrink-0 rounded-full bg-primary/60" />
+
+					  <span className="truncate">
+						{p.name}
+					  </span>
+					</button>
+
+					<button
+					  type="button"
+					  aria-label={`Delete ${p.name}`}
+					  onClick={() => {
+						setProjectToDelete({
+						  id: p.id,
+						  name: p.name,
+						});
+						setDeleteProjectOpen(true);
+					  }}
+					  className="mr-1 grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+					>
+					  <Trash2 className="size-3.5" />
+					</button>
+				  </div>
+				</li>
               );
             })}
           </ul>
@@ -157,6 +195,27 @@ function Sidebar() {
       </div>
 
       <ProjectDialog open={projectOpen} onOpenChange={setProjectOpen} />
+		<DeleteProjectDialog
+		  open={deleteProjectOpen}
+		  onOpenChange={(open) => {
+			setDeleteProjectOpen(open);
+
+			if (!open) {
+			  setProjectToDelete(null);
+			}
+		  }}
+		  project={projectToDelete}
+		  onDeleted={(projectId) => {
+			if (search?.project === projectId) {
+			  navigate({
+				to: "/",
+				search: {
+				  project: undefined,
+				},
+			  });
+			}
+		  }}
+		/>
     </aside>
   );
 }

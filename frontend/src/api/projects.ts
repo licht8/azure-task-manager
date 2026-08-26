@@ -30,3 +30,13 @@ export async function createProjectRequest(name: string) {
 
   return response.json() as Promise<ApiProject>;
 }
+
+export async function deleteProjectRequest(id: number) {
+  const response = await apiFetch(`/projects/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete project");
+  }
+}
