@@ -31,44 +31,157 @@
 # ============================================================
 
 param(
+    [string]$Config = ".\config.json",
+
     [switch]$SkipDockerBuild
 )
 
 $ErrorActionPreference = "Stop"
 
 # ============================================================
-# Configuration
+# Internal configuration
 # ============================================================
 
-$LOCATION = "polandcentral"
-
-$RESOURCE_GROUP = "rg-task-manager"
-
-$ACR_NAME = "taskmanager"
-$ACR_LOGIN_SERVER = "taskmanager.azurecr.io"
-
-$ENVIRONMENT_NAME = "task-manager-env"
-
-$BACKEND_APP = "containerapp-task-manager"
-$FRONTEND_APP = "task-manager-frontend"
-
-$BACKEND_IMAGE = "container-app-task-manager"
-$FRONTEND_IMAGE = "container-app-task-manager-frontend"
-
-$POSTGRES_SERVER = "postgres-task-manager"
-$POSTGRES_DATABASE = "tasks"
-$POSTGRES_ADMIN = "taskuser"
+# Backend and frontend application ports.
+# These are application-level technical constants and are not
+# intended to be changed through the deployment configuration.
 
 $BACKEND_PORT = 8000
 $FRONTEND_PORT = 3000
 
+
 # Public bootstrap image.
 #
-# IMPORTANT:
-# Container Apps must be provisioned successfully before we
-# configure the private ACR registry.
-#
+# Container Apps are initially created with a public image.
+# Managed Identity and AcrPull permissions are configured before
+# the private ACR images are assigned.
+
 $BOOTSTRAP_IMAGE = "mcr.microsoft.com/k8se/quickstart:latest"
+
+
+# ============================================================
+# Deployment configuration
+# ============================================================
+
+if (-not (Test-Path $Config)) {
+    throw "Configuration file not found: $Config"
+}
+
+Write-Host ""
+Write-Host "Loading configuration:" -ForegroundColor Cyan
+Write-Host "  $Config"
+
+try {
+
+    $configData = Get-Content `
+        -Path $Config `
+        -Raw |
+        ConvertFrom-Json
+
+}
+catch {
+
+    throw "Could not read configuration file: $Config"
+}
+
+
+# Azure location
+
+$LOCATION = $configData.location
+
+
+# Resource Group
+
+$RESOURCE_GROUP = $configData.resourceGroup
+
+
+# Azure Container Registry
+
+$ACR_NAME = $configData.acrName
+
+
+# Container Apps Environment
+
+$ENVIRONMENT_NAME = $configData.environmentName
+
+
+# Container Apps
+
+$BACKEND_APP = $configData.backendApp
+$FRONTEND_APP = $configData.frontendApp
+
+
+# Docker images
+
+$BACKEND_IMAGE = $configData.backendImage
+$FRONTEND_IMAGE = $configData.frontendImage
+
+
+# PostgreSQL
+
+$POSTGRES_SERVER = $configData.postgresServer
+$POSTGRES_DATABASE = $configData.postgresDatabase
+$POSTGRES_ADMIN = $configData.postgresAdmin
+
+
+# ============================================================
+# Configuration validation
+# ============================================================
+
+$requiredConfiguration = @(
+    "LOCATION",
+    "RESOURCE_GROUP",
+    "ACR_NAME",
+    "ENVIRONMENT_NAME",
+    "BACKEND_APP",
+    "FRONTEND_APP",
+    "BACKEND_IMAGE",
+    "FRONTEND_IMAGE",
+    "POSTGRES_SERVER",
+    "POSTGRES_DATABASE",
+    "POSTGRES_ADMIN"
+)
+
+foreach ($variableName in $requiredConfiguration) {
+
+    $value = Get-Variable `
+        -Name $variableName `
+        -ValueOnly
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+
+        throw "Missing required configuration value: $variableName"
+    }
+}
+
+
+# ============================================================
+# Loaded configuration
+# ============================================================
+
+Write-Host ""
+Write-Host "Deployment configuration:" -ForegroundColor Cyan
+
+Write-Host ""
+Write-Host "  Location:             $LOCATION"
+Write-Host "  Resource Group:       $RESOURCE_GROUP"
+Write-Host "  ACR:                  $ACR_NAME"
+Write-Host "  Environment:          $ENVIRONMENT_NAME"
+
+Write-Host ""
+Write-Host "  Backend App:          $BACKEND_APP"
+Write-Host "  Frontend App:         $FRONTEND_APP"
+
+Write-Host ""
+Write-Host "  Backend Image:        $BACKEND_IMAGE"
+Write-Host "  Frontend Image:       $FRONTEND_IMAGE"
+
+Write-Host ""
+Write-Host "  PostgreSQL Server:    $POSTGRES_SERVER"
+Write-Host "  PostgreSQL Database:  $POSTGRES_DATABASE"
+Write-Host "  PostgreSQL Admin:     $POSTGRES_ADMIN"
+
+Write-Host ""
 
 # ============================================================
 # Helpers

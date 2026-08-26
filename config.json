@@ -1,21 +1,19 @@
 {
-    "subscriptionId": "",
+  "location": "polandcentral",
 
-    "location": "polandcentral",
+  "resourceGroup": "rg-task-manager",
 
-    "resourceGroup": "rg-task-manager",
+  "acrName": "taskmanager",
 
-    "acrName": "taskmanager",
+  "environmentName": "task-manager-env",
 
-    "environmentName": "",
+  "backendApp": "containerapp-task-manager",
+  "frontendApp": "task-manager-frontend",
 
-    "containerAppName": "containerapp-task-manager",
+  "backendImage": "container-app-task-manager",
+  "frontendImage": "container-app-task-manager-frontend",
 
-    "postgresServerName": "chumakzes",
-
-    "postgresAdmin": "taskuser",
-
-    "databaseName": "tasks",
-
-    "imageTag": "latest"
+  "postgresServer": "postgres-task-manager",
+  "postgresDatabase": "tasks",
+  "postgresAdmin": "taskuser"
 }
