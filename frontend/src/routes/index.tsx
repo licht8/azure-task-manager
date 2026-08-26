@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { TaskDialog } from "@/components/task-dialog";
 import type { Task } from "@/types/task"
 import { useWorkspace } from "@/data/store";
+import { DeleteTaskDialog } from "@/components/delete-task-dialog";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
@@ -49,9 +50,12 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 function Dashboard() {
   const { project } = Route.useSearch();
   const navigate = useNavigate();
-  const { tasks, deleteTask, projectName } = useWorkspace();
+  const { tasks, projectName } = useWorkspace();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
+  
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   const visible = useMemo(
     () => (project ? tasks.filter((t) => t.projectId === project) : tasks),
@@ -128,13 +132,16 @@ function Dashboard() {
                 >
                   <Pencil className="size-4" />
                 </button>
-                <button
-                  aria-label={`Delete ${task.title}`}
-                  onClick={() => deleteTask(task.id)}
-                  className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="size-4" />
-                </button>
+				<button
+				  aria-label={`Delete ${task.title}`}
+				  onClick={() => {
+					setDeletingTask(task);
+					setDeleteDialogOpen(true);
+				  }}
+				  className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+				>
+				  <Trash2 className="size-4" />
+				</button>
               </div>
             </li>
           ))}
@@ -145,6 +152,13 @@ function Dashboard() {
       </section>
 
       <TaskDialog open={dialogOpen} onOpenChange={setDialogOpen} task={editing} />
+	  
+		<DeleteTaskDialog
+		  open={deleteDialogOpen}
+		  onOpenChange={setDeleteDialogOpen}
+		  task={deletingTask}
+		/>
+	  
     </AppShell>
   );
 }
