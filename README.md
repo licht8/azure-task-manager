@@ -318,7 +318,7 @@ The deployment script supports two configuration modes.
 Run:
 
 ```powershell
-.\setup-azure.ps1
+.\setup-azure-v2.ps1
 ```
 
 The script will interactively request missing configuration values.
@@ -330,15 +330,15 @@ The script will interactively request missing configuration values.
 The script can also use a JSON configuration file:
 
 ```powershell
-.\setup-azure.ps1 -Config .\config.json
+.\setup-azure-v2.ps1 -Config .\config.json
 ```
 
-If `config.json` exists in the same directory as `setup-azure.ps1`, it is automatically loaded when no `-Config` parameter is specified.
+If `config.json` exists in the same directory as `setup-azure-v2.ps1`, it is automatically loaded when no `-Config` parameter is specified.
 
 For example:
 
 ```powershell
-.\setup-azure.ps1
+.\setup-azure-v2.ps1
 ```
 
 will automatically use:
