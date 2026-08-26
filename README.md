@@ -211,42 +211,38 @@ docker compose up --build
 
 # Deploying to Azure
 
-The project includes an automated Azure deployment script:
+The project includes a PowerShell deployment script (`setup-azure-v2.ps1`) that automates the deployment of the complete Azure infrastructure for Azure Task Manager.
 
-```text
-setup-azure-v2.ps1
+The script is designed to be **idempotent** where possible: existing Azure resources are detected and reused instead of being recreated.
+
+### Prerequisites
+
+Before running the deployment script, make sure the following tools are installed and available in `PATH`:
+
+- Azure CLI
+- Docker
+- Git
+- PowerShell
+
+You also need:
+
+- An active Azure subscription
+- Permission to create and manage Azure resources
+- A valid `config.json` configuration file
+
+### Usage
+
+Run the complete deployment:
+
+```powershell
+.\setup-azure-v2.ps1
 ```
 
-The script automates the deployment and configuration of the required Azure infrastructure.
-
-Instead of manually creating each resource, the script can detect existing resources, reuse them, or create new resources when necessary.
-
-## Deployment Script Features
-
-The script performs the following operations:
-
-1. Checks Azure CLI and Docker
-2. Checks Docker daemon status
-3. Checks Azure login
-4. Allows Azure subscription selection
-5. Checks required Azure Resource Providers
-6. Configures the Azure region
-7. Creates or reuses a Resource Group
-8. Creates or reuses an Azure Container Registry
-9. Builds and pushes the Docker image
-10. Creates or reuses PostgreSQL Flexible Server
-11. Creates or reuses the PostgreSQL database
-12. Creates or reuses a Container Apps Environment
-13. Creates or reuses the Container App
-14. Configures a system-assigned Managed Identity
-15. Grants the `AcrPull` role
-16. Configures ACR authentication
-17. Generates the PostgreSQL `DATABASE_URL`
-18. Stores `DATABASE_URL` as an Azure Container App secret
-19. Configures the `DATABASE_URL` environment variable
-20. Configures application health probes
-21. Deploys the Docker image
-22. Performs final deployment verification
+Skip the Docker build and push steps:
+```powershell
+.\setup-azure-v2.ps1 -SkipDockerBuild
+```
+The script reads Azure resource names and application configuration from config.json.
 
 ---
 
@@ -254,75 +250,35 @@ The script performs the following operations:
 
 The deployment script creates or reuses the following Azure resources:
 
-- Resource Group
-- Azure Container Registry
-- Container Apps Environment
-- Azure Container App
+### Compute & Application
+- Azure Container Apps Environment
+- Backend Container App
+- Frontend Container App
+
+### Container Registry
+- Azure Container Registry (ACR)
+- Backend Docker image
+- Frontend Docker image
+
+### Database
 - PostgreSQL Flexible Server
 - PostgreSQL database
-- System-assigned Managed Identity
-- `AcrPull` role assignment
-- Container App secrets
-- Container App health probes
+### Security & Identity
+- System-assigned Managed Identity for the backend
+- System-assigned Managed Identity for the frontend
+- AcrPull role assignments
+- Azure Container App secrets
+- DATABASE_URL secret
+- JWT_SECRET_KEY secret
 
----
-
-# Azure Deployment Requirements
-
-Before running the deployment script, install:
-
-- Azure CLI
-- Docker Desktop
-- PowerShell
-- an active Azure subscription
-
-Verify Azure CLI:
-
-```powershell
-az --version
-```
-
-Verify Docker:
-
-```powershell
-docker --version
-```
-
-Log in to Azure:
-
-```powershell
-az login
-```
-
-Check the current Azure account:
-
-```powershell
-az account show
-```
-
-You can also manually select a subscription:
-
-```powershell
-az account set --subscription "YOUR_SUBSCRIPTION_ID"
-```
-
-The deployment script also provides subscription selection during interactive installation.
-
----
-
-# Azure Configuration
-
-The deployment script supports two configuration modes.
-
-## Interactive Mode
-
-Run:
-
-```powershell
-.\setup-azure-v2.ps1
-```
-
-The script will interactively request missing configuration values.
+### Application Configuration
+- Backend FRONTEND_URL environment variable
+- Backend DATABASE_URL secret reference
+- Backend JWT_SECRET_KEY secret reference
+- Backend liveness probe
+- Backend readiness probe
+- Frontend liveness probe
+- Frontend readiness probe
 
 ---
 
@@ -350,59 +306,25 @@ will automatically use:
 
 ### Configuration Parameters
 
-| Parameter | Description |
-|---|---|
-| `subscriptionId` | Azure subscription ID used for the deployment. |
-| `location` | Azure region used when creating new resources. |
-| `resourceGroup` | Default Azure Resource Group used by the deployment. |
-| `acrName` | Azure Container Registry name. The name must be globally unique. |
-| `environmentName` | Azure Container Apps Environment name. |
-| `containerAppName` | Azure Container App name. |
-| `postgresServerName` | PostgreSQL Flexible Server name. The name must be globally unique. |
-| `postgresAdmin` | PostgreSQL administrator username. |
-| `databaseName` | PostgreSQL database name. |
-| `imageTag` | Docker image tag used for the application image. |
+The Azure deployment script uses a `config.json` file to define Azure resource names, application names, Docker image names, and PostgreSQL configuration.
+
+| Parameter          | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| `location`         | Azure region used when creating new resources.                     |
+| `resourceGroup`    | Azure Resource Group used by the deployment.                       |
+| `acrName`          | Azure Container Registry name. The name must be globally unique.   |
+| `environmentName`  | Azure Container Apps Environment name.                             |
+| `backendApp`       | Name of the backend Azure Container App.                           |
+| `frontendApp`      | Name of the frontend Azure Container App.                          |
+| `backendImage`     | Repository name used for the backend Docker image in ACR.          |
+| `frontendImage`    | Repository name used for the frontend Docker image in ACR.         |
+| `postgresServer`   | PostgreSQL Flexible Server name. The name must be globally unique. |
+| `postgresDatabase` | PostgreSQL database name.                                          |
+| `postgresAdmin`    | PostgreSQL administrator username.                                 |
 
 Additional documentation for the configuration file is available in:
 ```text
 CONFIG.md
-```
-
----
-
-# Example Azure Configuration
-
-With the example `config.json`, the deployment uses:
-```text
-Subscription:
-  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-
-Location:
-  westeurope
-
-Resource Group:
-  rg-task-manager
-
-Azure Container Registry:
-  acr-task-manager
-
-Container Apps Environment:
-  docker-demo-env
-
-Container App:
-  containerapp-task-manager
-
-PostgreSQL Server:
-  postgres-task-manager
-
-PostgreSQL Administrator:
-  taskuser
-
-PostgreSQL Database:
-  tasks
-
-Docker Image:
-  acr-task-manager.azurecr.io/containerapp-task-manager:latest
 ```
 
 ---
@@ -434,62 +356,6 @@ DATABASE_URL=secretref:database-url
 ```
 
 The actual PostgreSQL password is therefore not stored in the source code or `config.json`.
-
----
-
-# Azure Container Apps
-
-The application runs inside Azure Container Apps.
-
-The container listens on port:
-
-```text
-8000
-```
-
-The application is started with:
-
-```text
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-Azure Container Apps exposes the application through HTTPS.
-
-The deployment script also configures liveness and readiness probes using:
-
-```text
-GET /health
-```
-
----
-
-# Azure Container Registry
-
-The Docker image is stored in Azure Container Registry.
-
-The image follows the format:
-
-```text
-<ACR_LOGIN_SERVER>/<IMAGE_NAME>:<IMAGE_TAG>
-```
-
-For example:
-
-```text
-acr-task-manager.azurecr.io/containerapp-task-manager:latest
-```
-
-The Container App uses a system-assigned Managed Identity to authenticate with ACR.
-
-The script automatically grants the identity:
-
-```text
-AcrPull
-```
-
-permission on the Container Registry.
-
-No ACR admin password is required.
 
 ---
 
