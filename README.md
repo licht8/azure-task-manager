@@ -179,6 +179,7 @@ docker compose up --build
 Docker Compose will build and start both services.
 
 The application will be available at:
+
 Frontend:
 ```text
 http://localhost:3000
