@@ -1,193 +1,134 @@
-````markdown
 # Azure Task Manager — Configuration Reference
 
-The `config.json` file contains the Azure resource configuration used by `setup-azure.ps1`. It allows the deployment script to run with predefined values instead of asking for these values interactively.
+The `config.json` file contains the Azure resource configuration used by
+`setup-azure-v2.ps1`.
 
-The PostgreSQL password is intentionally **not stored in `config.json`**. The script always asks for the PostgreSQL administrator password interactively.
+It defines the Azure region, resource names, Container Apps, Docker images,
+and PostgreSQL configuration.
+
+Sensitive values such as the PostgreSQL password and JWT secret are **not**
+stored in `config.json`. They are requested interactively by the deployment
+script.
 
 ## Example Configuration
 
 ```json
 {
-    "subscriptionId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "location": "polandcentral",
 
-    "location": "westeurope",
+  "resourceGroup": "rg-task-manager",
 
-    "resourceGroup": "rg-task-manager",
+  "acrName": "taskmanager",
 
-    "acrName": "acr-task-manager",
+  "environmentName": "task-manager-env",
 
-    "environmentName": "docker-demo-env",
+  "backendApp": "containerapp-task-manager",
+  "frontendApp": "task-manager-frontend",
 
-    "containerAppName": "containerapp-task-manager",
+  "backendImage": "container-app-task-manager",
+  "frontendImage": "container-app-task-manager-frontend",
 
-    "postgresServerName": "postgres-task-manager",
-
-    "postgresAdmin": "taskuser",
-
-    "databaseName": "tasks",
-
-    "imageTag": "latest"
+  "postgresServer": "postgres-task-manager",
+  "postgresDatabase": "tasks",
+  "postgresAdmin": "taskuser"
 }
-````
+```
 
 ## Configuration Parameters
 
-| Parameter            | Example                                | Description                                                                                                                                                                                                                                       |
-| -------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `subscriptionId`     | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | Azure subscription ID in which the resources will be created or reused. The subscription must be available to the currently logged-in Azure account and must be in the `Enabled` state.                                                           |
-| `location`           | `westeurope`                           | Azure region where new resources will be created. In this configuration, `westeurope` is used. Existing resources may be located in another region if they are reused.                                                                            |
-| `resourceGroup`      | `rg-task-manager`                      | Name of the Azure Resource Group used for the deployment. If the Resource Group does not exist, the script creates it in the configured `location`.                                                                                               |
-| `acrName`            | `acr-task-manager`                     | Name of the Azure Container Registry (ACR). ACR names are globally unique and must contain only lowercase letters and numbers. The script reuses the registry if it already exists or creates it if necessary.                                    |
-| `environmentName`    | `docker-demo-env`                      | Name of the Azure Container Apps Environment used by the application. The script automatically checks whether this environment exists and reuses it when possible. The environment can belong to a different Resource Group than `resourceGroup`. |
-| `containerAppName`   | `containerapp-task-manager`            | Name of the Azure Container App that hosts the Task Manager API. The script creates the Container App if it does not already exist or updates the existing application.                                                                           |
-| `postgresServerName` | `postgres-task-manager`                | Name of the Azure Database for PostgreSQL Flexible Server. PostgreSQL server names must be globally unique. The script checks whether the server already exists and reuses it when possible.                                                      |
-| `postgresAdmin`      | `taskuser`                             | Administrator username for the PostgreSQL Flexible Server. This username is used to build the `DATABASE_URL` connection string.                                                                                                                   |
-| `databaseName`       | `tasks`                                | Name of the PostgreSQL database used by the Task Manager application. The script creates the database if it does not already exist.                                                                                                               |
-| `imageTag`           | `latest`                               | Docker image tag used when building, pushing, and deploying the application image. With `latest`, the resulting image will be similar to `chinazes.azurecr.io/containerapp-task-manager:latest`.                                                  |
+| Parameter | Description |
+|---|---|
+| `location` | Azure region where new resources are created. |
+| `resourceGroup` | Azure Resource Group used by the deployment. |
+| `acrName` | Azure Container Registry name. The name must be globally unique. |
+| `environmentName` | Azure Container Apps Environment name. |
+| `backendApp` | Name of the Container App hosting the FastAPI backend. |
+| `frontendApp` | Name of the Container App hosting the frontend. |
+| `backendImage` | Docker repository name used for the backend image. |
+| `frontendImage` | Docker repository name used for the frontend image. |
+| `postgresServer` | PostgreSQL Flexible Server name. |
+| `postgresDatabase` | PostgreSQL database name. |
+| `postgresAdmin` | PostgreSQL administrator username. |
 
-## PostgreSQL Password
+## PostgreSQL Credentials
 
-The PostgreSQL administrator password must **not** be added to `config.json`.
+The PostgreSQL password is **not stored** in `config.json`.
 
-For security reasons, the deployment script asks for the password interactively:
+During deployment, the script asks for:
 
 ```text
-PostgreSQL admin password:
+PostgreSQL password for taskuser:
+JWT_SECRET_KEY:
 ```
 
-The password is then used to construct the PostgreSQL connection string:
+The PostgreSQL password is used to generate the following connection string:
 
 ```text
 postgresql://<username>:<password>@<server>.postgres.database.azure.com:5432/<database>?sslmode=require
 ```
 
-The resulting `DATABASE_URL` is stored as an **Azure Container App secret** and exposed to the application through the `DATABASE_URL` environment variable.
+The resulting `DATABASE_URL` and `JWT_SECRET_KEY` are stored as Azure Container
+App secrets.
 
-## Resource Group and Existing Resources
+## Docker Images
 
-The following resources can already exist before running the script:
+The script automatically adds the configured ACR login server and Git commit
+tag to the repository names.
 
-* Resource Group
-* Azure Container Registry
-* Container Apps Environment
-* Container App
-* PostgreSQL Flexible Server
-* PostgreSQL database
-* Docker image
-
-The script attempts to detect and reuse existing resources instead of unnecessarily creating duplicates.
-
-For example, the configured Container Apps Environment:
-
-```json
-"environmentName": "docker-demo-env"
-```
-
-does not necessarily have to be located in:
-
-```json
-"resourceGroup": "rg-task-manager"
-```
-
-The script automatically determines the actual Resource Group of an existing Container Apps Environment and uses that Resource Group when interacting with it.
-
-Therefore, an existing environment such as:
+For example:
 
 ```text
-Environment:
-    docker-demo-env
+ACR:
+taskmanager.azurecr.io
 
-Resource Group:
-    rg-task-manager
+Backend:
+taskmanager.azurecr.io/container-app-task-manager:<git-tag>
 
-Location:
-    West Europe
+Frontend:
+taskmanager.azurecr.io/container-app-task-manager-frontend:<git-tag>
 ```
 
-can be used even when the main deployment Resource Group is:
+The image tag is generated automatically from the current Git commit:
 
 ```text
-rg-task-manager
+git rev-parse --short HEAD
 ```
 
-## Docker Image
+If Git information is unavailable, the script uses a timestamp instead.
 
-The image repository name is automatically derived from the Container App name:
+## Running the Deployment
 
-```text
-$imageName = $containerAppName
-```
-
-With the current configuration:
-
-```json
-"containerAppName": "containerapp-task-manager",
-"imageTag": "latest"
-```
-
-and:
-
-```json
-"acrName": "acr-task-manager"
-```
-
-the final Docker image will be:
-
-```text
-acr-task-manager.azurecr.io/containerapp-task-manager:latest
-```
-
-The deployment process is:
-
-```text
-Dockerfile
-    ↓
-Docker build
-    ↓
-Azure Container Registry
-    ↓
-Container App
-```
-
-If the specified image already exists in ACR, the script asks whether the existing image should be reused or rebuilt.
-
-## Minimal Configuration Requirements
-
-All parameters shown in the example should normally be specified in `config.json`:
-
-```json
-{
-    "subscriptionId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "location": "westeurope",
-    "resourceGroup": "rg-task-manager",
-    "acrName": "acr-task-manager",
-    "environmentName": "docker-demo-env",
-    "containerAppName": "containerapp-task-manager",
-    "postgresServerName": "postgres-task-manager",
-    "postgresAdmin": "taskuser",
-    "databaseName": "tasks",
-    "imageTag": "latest"
-}
-```
-
-The only deployment value that is intentionally excluded is the PostgreSQL password.
-
-## Running the Installer
-
-When `config.json` is located in the same directory as `setup-azure.ps1`, the script automatically detects it:
+Using the default configuration:
 
 ```powershell
-.\setup-azure.ps1
+.\setup-azure-v2.ps1
 ```
 
-Alternatively, a specific configuration file can be provided:
+To skip Docker build and push:
 
 ```powershell
-.\setup-azure.ps1 -Config .\config.json
+.\setup-azure-v2.ps1 -SkipDockerBuild
 ```
 
-The script will load the configuration and use the specified Azure resources whenever possible. Values that are intentionally not stored in the configuration, such as the PostgreSQL password, are requested interactively during installation.
+To specify another configuration file:
 
+```powershell
+.\setup-azure-v2.ps1 -Config .\config.json
 ```
-```
+
+## Resource Reuse
+
+The deployment script checks whether required Azure resources already exist.
+
+Existing resources are reused whenever possible. This includes:
+
+- Resource Group
+- Azure Container Registry
+- Container Apps Environment
+- Backend Container App
+- Frontend Container App
+- PostgreSQL Flexible Server
+- PostgreSQL database
+
+Container Apps in a failed provisioning state are automatically removed and
+recreated using the bootstrap image before the private ACR image is deployed.
