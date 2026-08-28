@@ -211,7 +211,7 @@ docker compose up --build
 
 # Deploying to Azure
 
-The project includes a PowerShell deployment script (`setup-azure-v2.ps1`) that automates the deployment of the complete Azure infrastructure for Azure Task Manager.
+The project includes a PowerShell deployment script (`Deploy-AzureTaskManager.ps1`) that automates the deployment of the complete Azure infrastructure for Azure Task Manager.
 
 The script is designed to be **idempotent** where possible: existing Azure resources are detected and reused instead of being recreated.
 
@@ -235,12 +235,12 @@ You also need:
 Run the complete deployment:
 
 ```powershell
-.\setup-azure-v2.ps1
+.\Deploy-AzureTaskManager.ps1.ps1
 ```
 
 Skip the Docker build and push steps:
 ```powershell
-.\setup-azure-v2.ps1 -SkipDockerBuild
+.\Deploy-AzureTaskManager.ps1 -SkipDockerBuild
 ```
 The script reads Azure resource names and application configuration from config.json.
 
@@ -287,15 +287,15 @@ The deployment script creates or reuses the following Azure resources:
 The script can also use a JSON configuration file:
 
 ```powershell
-.\setup-azure-v2.ps1 -Config .\config.json
+.\Deploy-AzureTaskManager.ps1 -Config .\config.json
 ```
 
-If `config.json` exists in the same directory as `setup-azure-v2.ps1`, it is automatically loaded when no `-Config` parameter is specified.
+If `config.json` exists in the same directory as `Deploy-AzureTaskManager.ps1`, it is automatically loaded when no `-Config` parameter is specified.
 
 For example:
 
 ```powershell
-.\setup-azure-v2.ps1
+.\Deploy-AzureTaskManager.ps1
 ```
 
 will automatically use:

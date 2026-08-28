@@ -1,7 +1,7 @@
 # Azure Task Manager — Configuration Reference
 
 The `config.json` file contains the Azure resource configuration used by
-`setup-azure-v2.ps1`.
+`Deploy-AzureTaskManager.ps1`.
 
 It defines the Azure region, resource names, Container Apps, Docker images,
 and PostgreSQL configuration.
@@ -101,19 +101,19 @@ If Git information is unavailable, the script uses a timestamp instead.
 Using the default configuration:
 
 ```powershell
-.\setup-azure-v2.ps1
+.\Deploy-AzureTaskManager.ps1
 ```
 
 To skip Docker build and push:
 
 ```powershell
-.\setup-azure-v2.ps1 -SkipDockerBuild
+.\Deploy-AzureTaskManager.ps1 -SkipDockerBuild
 ```
 
 To specify another configuration file:
 
 ```powershell
-.\setup-azure-v2.ps1 -Config .\config.json
+.\Deploy-AzureTaskManager.ps1 -Config .\config.json
 ```
 
 ## Resource Reuse
