@@ -1,25 +1,24 @@
 # Azure Task Manager — Configuration Reference
 
-The `config.json` file contains the Azure resource configuration used by
-`Deploy-AzureTaskManager.ps1`.
+The `config.json` file contains the Azure resource configuration used by:
 
-It defines the Azure region, resource names, Container Apps, Docker images,
-and PostgreSQL configuration.
+```text
+Deploy-AzureTaskManager.ps1
+Deploy-AzurePostgreSQLBackup.ps1
+```
 
-Sensitive values such as the PostgreSQL password and JWT secret are **not**
-stored in `config.json`. They are requested interactively by the deployment
-script.
+It defines the Azure region, resource names, Container Apps, Docker images, PostgreSQL configuration, and backup resources.
+
+Sensitive values such as the PostgreSQL password and JWT secret are **not** stored in `config.json`.
 
 ## Example Configuration
 
 ```json
 {
   "location": "polandcentral",
-
   "resourceGroup": "rg-task-manager",
 
   "acrName": "taskmanager",
-
   "environmentName": "task-manager-env",
 
   "backendApp": "containerapp-task-manager",
@@ -30,50 +29,88 @@ script.
 
   "postgresServer": "postgres-task-manager",
   "postgresDatabase": "tasks",
-  "postgresAdmin": "taskuser"
+  "postgresAdmin": "taskuser",
+
+  "backupStorageAccount": "taskmanagerbackup",
+  "backupContainer": "postgres-backups",
+  "backupJob": "postgres-backup-job",
+  "backupIdentity": "postgres-backup-identity"
 }
 ```
 
 ## Configuration Parameters
 
-| Parameter | Description |
-|---|---|
-| `location` | Azure region where new resources are created. |
-| `resourceGroup` | Azure Resource Group used by the deployment. |
-| `acrName` | Azure Container Registry name. The name must be globally unique. |
-| `environmentName` | Azure Container Apps Environment name. |
-| `backendApp` | Name of the Container App hosting the FastAPI backend. |
-| `frontendApp` | Name of the Container App hosting the frontend. |
-| `backendImage` | Docker repository name used for the backend image. |
-| `frontendImage` | Docker repository name used for the frontend image. |
-| `postgresServer` | PostgreSQL Flexible Server name. |
-| `postgresDatabase` | PostgreSQL database name. |
-| `postgresAdmin` | PostgreSQL administrator username. |
+| Parameter              | Description                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| `location`             | Azure region where new resources are created.              |
+| `resourceGroup`        | Azure Resource Group used by the deployment.               |
+| `acrName`              | Azure Container Registry name.                             |
+| `environmentName`      | Azure Container Apps Environment name.                     |
+| `backendApp`           | Container App hosting the FastAPI backend.                 |
+| `frontendApp`          | Container App hosting the frontend.                        |
+| `backendImage`         | Docker repository name for the backend image.              |
+| `frontendImage`        | Docker repository name for the frontend image.             |
+| `postgresServer`       | PostgreSQL Flexible Server name.                           |
+| `postgresDatabase`     | PostgreSQL database name.                                  |
+| `postgresAdmin`        | PostgreSQL administrator username.                         |
+| `backupStorageAccount` | Azure Storage Account used for PostgreSQL backups.         |
+| `backupContainer`      | Blob Storage container used to store backup files.         |
+| `backupJob`            | Azure Container Apps Job used to run the `pg_dump` backup. |
+| `backupIdentity`       | User Assigned Managed Identity used by the backup Job.     |
 
 ## PostgreSQL Credentials
 
 The PostgreSQL password is **not stored** in `config.json`.
 
-During deployment, the script asks for:
+During deployment, the password is requested interactively:
 
 ```text
 PostgreSQL password for taskuser:
-JWT_SECRET_KEY:
 ```
 
-The PostgreSQL password is used to generate the following connection string:
+The password is used to generate:
 
 ```text
 postgresql://<username>:<password>@<server>.postgres.database.azure.com:5432/<database>?sslmode=require
 ```
 
-The resulting `DATABASE_URL` and `JWT_SECRET_KEY` are stored as Azure Container
-App secrets.
+The resulting `DATABASE_URL` is stored as an Azure Container App secret.
+
+The `JWT_SECRET_KEY` is also stored as an Azure Container App secret and is not committed to the repository.
+
+## Backup Configuration
+
+The backup configuration is used by:
+
+```text
+scripts/Deploy-AzurePostgreSQLBackup.ps1
+```
+
+The Azure `pg_dump` backup pipeline uses:
+
+```text
+PostgreSQL
+    ↓
+pg_dump
+    ↓
+Docker
+    ↓
+Azure Container Apps Job
+    ↓
+Azure Blob Storage
+```
+
+Backup files are stored in the configured Blob Container under:
+
+```text
+backups/
+```
+
+The `backupIdentity` Managed Identity provides access to ACR and Blob Storage using Azure RBAC.
 
 ## Docker Images
 
-The script automatically adds the configured ACR login server and Git commit
-tag to the repository names.
+The deployment script automatically combines the ACR login server with the configured repository names.
 
 For example:
 
@@ -88,13 +125,13 @@ Frontend:
 taskmanager.azurecr.io/container-app-task-manager-frontend:<git-tag>
 ```
 
-The image tag is generated automatically from the current Git commit:
+The image tag is generated from the current Git commit:
 
 ```text
 git rev-parse --short HEAD
 ```
 
-If Git information is unavailable, the script uses a timestamp instead.
+If Git information is unavailable, a timestamp is used instead.
 
 ## Running the Deployment
 
@@ -116,19 +153,31 @@ To specify another configuration file:
 .\Deploy-AzureTaskManager.ps1 -Config .\config.json
 ```
 
+The Azure backup infrastructure can be deployed separately:
+
+```powershell
+.\scripts\Deploy-AzurePostgreSQLBackup.ps1
+```
+
 ## Resource Reuse
 
-The deployment script checks whether required Azure resources already exist.
+The deployment scripts check whether required Azure resources already exist and reuse them whenever possible.
 
-Existing resources are reused whenever possible. This includes:
+The main deployment can reuse:
 
-- Resource Group
-- Azure Container Registry
-- Container Apps Environment
-- Backend Container App
-- Frontend Container App
-- PostgreSQL Flexible Server
-- PostgreSQL database
+* Resource Group
+* Azure Container Registry
+* Container Apps Environment
+* Backend Container App
+* Frontend Container App
+* PostgreSQL Flexible Server
+* PostgreSQL database
 
-Container Apps in a failed provisioning state are automatically removed and
-recreated using the bootstrap image before the private ACR image is deployed.
+The backup deployment can reuse:
+
+* Azure Storage Account
+* Blob Container
+* User Assigned Managed Identity
+* Azure Container Apps Job
+
+Resources that are missing are created automatically when possible.
