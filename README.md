@@ -146,14 +146,12 @@ The project supports PostgreSQL backups for both Azure and local environments.
 
 ### Azure Native Backup
 Uses the built-in backup functionality of **Azure Database for PostgreSQL Flexible Server**.
-
 ```text
 scripts/Backup-AzurePostgreSQL.ps1
 ```
 
-### Azure pg_dump Backup
+### Azure `pg_dump` Backup
 Deploys a Docker-based PostgreSQL backup solution using Azure Container Apps Jobs.
-
 ```
 scripts/Deploy-AzurePostgreSQLBackup.ps1
 ```
@@ -173,14 +171,14 @@ The deployment script also verifies the Job execution and confirms that the back
 Backups created by the Azure Job are stored in the backups/ blob path inside Azure Blob Storage.
 
 Example:
-
+```
 Azure Blob Storage
 └── backups/
     └── tasks_20260829-184932.dump
+```
 
 ### Local Backup
 Creates PostgreSQL `.dump` files locally using `pg_dump`.
-
 ```text
 scripts/Backup-AzurePostgreSQLLocal.ps1
 ```
