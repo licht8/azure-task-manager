@@ -144,11 +144,23 @@ The `/health` endpoint is also used by Azure Container Apps health probes.
 
 The project supports PostgreSQL backups for both Azure and local environments.
 
+
 ### Azure Native Backup
 Uses the built-in backup functionality of **Azure Database for PostgreSQL Flexible Server**.
 ```text
 scripts/Backup-AzurePostgreSQL.ps1
 ```
+The backup is managed entirely by Azure without using pg_dump or Docker.
+
+Limitations:
+On-demand backups are not supported on the Burstable compute tier.
+On-demand backups are not supported with SSDv2 storage.
+Up to 7 on-demand backups can be created per server.
+The server must be available and properly configured.
+Standard automated backup retention is 7–35 days.
+
+For greater portability and control, the project also provides a Docker-based pg_dump backup solution.
+
 
 ### Azure `pg_dump` Backup
 Deploys a Docker-based PostgreSQL backup solution using Azure Container Apps Jobs.
@@ -177,6 +189,7 @@ Azure Blob Storage
     └── tasks_20260829-184932.dump
 ```
 
+
 ### Local Backup
 Creates PostgreSQL `.dump` files locally using `pg_dump`.
 ```text
@@ -184,7 +197,6 @@ scripts/Backup-AzurePostgreSQLLocal.ps1
 ```
 Backups are saved to the local: `backups/`
 
----
 
 ### Backup Configuration
 
