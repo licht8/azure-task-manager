@@ -140,7 +140,7 @@ The `/health` endpoint is also used by Azure Container Apps health probes.
 
 ---
 
-### PostgreSQL Backup
+## PostgreSQL Backup
 
 The project supports PostgreSQL backups for both Azure and local environments.
 
