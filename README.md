@@ -153,11 +153,11 @@ scripts/Backup-AzurePostgreSQL.ps1
 The backup is managed entirely by Azure without using pg_dump or Docker.
 
 Limitations:
-On-demand backups are not supported on the Burstable compute tier.
-On-demand backups are not supported with SSDv2 storage.
-Up to 7 on-demand backups can be created per server.
-The server must be available and properly configured.
-Standard automated backup retention is 7–35 days.
+- On-demand backups are not supported on the Burstable compute tier.
+- On-demand backups are not supported with SSDv2 storage.
+- Up to 7 on-demand backups can be created per server.
+- The server must be available and properly configured.
+- Standard automated backup retention is 7–35 days.
 
 For greater portability and control, the project also provides a Docker-based pg_dump backup solution.
 
