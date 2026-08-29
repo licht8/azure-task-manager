@@ -1,19 +1,24 @@
 {
-  "location": 			"polandcentral",
+  "location": 				"polandcentral",
 
-  "resourceGroup": 		"rg-task-manager",
+  "resourceGroup": 			"rg-task-manager",
 
-  "acrName": 			"taskmanager",
+  "acrName": 				"taskmanager",
 
-  "environmentName": 	"task-manager-env",
+  "environmentName": 		"task-manager-env",
 
-  "backendApp": 		"containerapp-task-manager",
-  "frontendApp": 		"task-manager-frontend",
+  "backendApp": 			"containerapp-task-manager",
+  "frontendApp": 			"task-manager-frontend",
 
-  "backendImage": 		"container-app-task-manager",
-  "frontendImage": 		"container-app-task-manager-frontend",
+  "backendImage": 			"container-app-task-manager",
+  "frontendImage": 			"container-app-task-manager-frontend",
 
-  "postgresServer": 	"postgres-task-manager",
-  "postgresDatabase": 	"tasks",
-  "postgresAdmin": 		"taskuser"
+  "postgresServer": 		"postgres-task-manager",
+  "postgresDatabase": 		"tasks",
+  "postgresAdmin": 			"taskuser",
+  
+  "backupStorageAccount": 	"taskmanagerbackup",
+  "backupContainer": 		"postgres-backups",
+  "backupJob": 				"postgres-backup-job",
+  "backupIdentity": 		"postgres-backup-identity"
 }

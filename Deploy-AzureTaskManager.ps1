@@ -22,11 +22,11 @@
 #
 # Usage:
 #
-#   .\setup-azure-v2.ps1
+#   .\Deploy-AzureTaskManager.ps1
 #
-# Or:
+# Or: 
 #
-#   .\setup-azure-v2.ps1 -SkipDockerBuild
+#   .\Deploy-AzureTaskManager.ps1 -SkipDockerBuild
 #
 # ============================================================
 
