@@ -3,8 +3,14 @@
 #
 # PostgreSQL -> Azure Container Apps Job -> Azure Blob Storage
 #
+#
+# Docker image: 
+# taskmanager.azurecr.io/postgres-backup:latest
+#
 # Configuration:
+#
 #   .\config.json
+#
 # ============================================================
 
 param(
