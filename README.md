@@ -140,6 +140,69 @@ The `/health` endpoint is also used by Azure Container Apps health probes.
 
 ---
 
+### PostgreSQL Backup
+
+The project supports PostgreSQL backups for both Azure and local environments.
+
+### Azure Native Backup
+Uses the built-in backup functionality of **Azure Database for PostgreSQL Flexible Server**.
+
+```text
+scripts/Backup-AzurePostgreSQL.ps1
+```
+
+### Azure pg_dump Backup
+Deploys a Docker-based PostgreSQL backup solution using Azure Container Apps Jobs.
+
+```
+scripts/Deploy-AzurePostgreSQLBackup.ps1
+```
+
+PostgreSQL → pg_dump → Docker → Azure Container Apps Job → Azure Blob Storage
+
+The backup infrastructure uses:
+
+Azure Container Registry
+Azure Container Apps Jobs
+Azure Blob Storage
+User Assigned Managed Identity
+Azure RBAC
+
+The Managed Identity is used for ACR and Blob Storage authentication without storing Azure credentials in the container.
+The deployment script also verifies the Job execution and confirms that the backup Blob was created successfully.
+Backups created by the Azure Job are stored in the backups/ blob path inside Azure Blob Storage.
+
+Example:
+
+Azure Blob Storage
+└── backups/
+    └── tasks_20260829-184932.dump
+
+### Local Backup
+Creates PostgreSQL `.dump` files locally using `pg_dump`.
+
+```text
+scripts/Backup-AzurePostgreSQLLocal.ps1
+```
+Backups are saved to the local: `backups/`
+
+---
+
+### Backup Configuration
+
+Backup-related settings are stored in `config.json`:
+
+```json
+{
+  "backupStorageAccount": "taskmanagerbackup",
+  "backupContainer": "postgres-backups",
+  "backupJob": "postgres-backup-job",
+  "backupIdentity": "postgres-backup-identity"
+}
+```
+
+---
+
 # Running with Docker Compose
 
 ## Requirements
